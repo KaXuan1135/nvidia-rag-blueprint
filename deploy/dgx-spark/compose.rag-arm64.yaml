@@ -1,0 +1,23 @@
+services:
+  rag-server:
+    image: local/nvidia-rag-server:${TAG:-2.6.0}-arm64
+    platform: linux/arm64
+    pull_policy: never
+    build:
+      context: ../../
+      dockerfile: deploy/dgx-spark/Dockerfile.service-arm64
+      args:
+        SERVICE_EXTRA: rag
+    entrypoint:
+      - uvicorn
+      - nvidia_rag.rag_server.server:app
+    environment:
+      NVIDIA_API_KEY: local
+
+  rag-frontend:
+    image: local/nvidia-rag-frontend:${TAG:-2.6.0}-arm64
+    platform: linux/arm64
+    pull_policy: never
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile.arm64

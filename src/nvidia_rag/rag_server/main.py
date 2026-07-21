@@ -287,11 +287,17 @@ class NvidiaRAG:
         # Load prompts and other utilities
         self.prompts = get_prompts(prompts)
         self.vdb_top_k = int(self.config.retriever.vdb_top_k)
+        assume_reasoning_prefix = (
+            self.config.llm.parameters.enable_thinking
+            and "nemotron-3-nano" in self.config.llm.model_name.lower()
+        )
         self.StreamingFilterThinkParser = get_streaming_filter_think_parser_async(
-            enable_thinking=self.config.llm.parameters.enable_thinking
+            enable_thinking=self.config.llm.parameters.enable_thinking,
+            assume_reasoning_prefix=assume_reasoning_prefix,
         )
         self.StreamingReasoningParser = get_streaming_filter_think_parser_async(
-            preserve_reasoning_content=True
+            preserve_reasoning_content=True,
+            assume_reasoning_prefix=assume_reasoning_prefix,
         )
 
         # Agentic RAG agent/graph — built lazily on the first agentic request.

@@ -1,5 +1,10 @@
 <h1>NVIDIA RAG Blueprint</h1>
 
+> This branch is a fully local, single-GB10 adaptation of NVIDIA's RAG
+> Blueprint. It uses Nemotron 3 Nano NVFP4 while preserving NVIDIA's embedding,
+> reranking, OCR, and document-structure models. Start with
+> [DGX_SPARK.md](DGX_SPARK.md).
+
 Retrieval-Augmented Generation (RAG) combines the reasoning power of large language models (LLMs)
 with real-time retrieval from trusted data sources.
 It grounds AI responses in enterprise knowledge,
@@ -111,7 +116,7 @@ This modular design ensures efficient query processing, accurate retrieval of in
 
 - Response Generation (Inference)
 
-    - [NVIDIA NIM nemotron-3-super-120b-a12b](https://build.nvidia.com/nvidia/nemotron-3-super-120b-a12b)
+    - [NVIDIA NIM nemotron-3-nano-30b-a3b](https://build.nvidia.com/nvidia/nemotron-3-nano-30b-a3b)
 
 - Retriever and Extraction Models
 

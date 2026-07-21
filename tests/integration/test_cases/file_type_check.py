@@ -662,11 +662,14 @@ class FileTypeCheckModule(BaseTestModule):
             logger.info(f"✅ Successful documents: {sorted(actual_doc_names)}")
             logger.info(f"❌ Failed documents: {sorted(actual_failed_names)}")
 
-            # Validate that .csv and .gif files are in failed_documents with correct error message
+            # GIF remains unsupported; CSV is converted to text for ingestion.
             expected_failed_files = {
                 "India_population.gif": "Unsupported file type",
-                "PdM_machines.csv": "Unsupported file type",
             }
+
+            if "PdM_machines.csv" not in actual_doc_names:
+                logger.error("CSV compatibility ingestion did not return PdM_machines.csv")
+                return False
 
             failed_docs_dict = {
                 doc["document_name"]: doc["error_message"]

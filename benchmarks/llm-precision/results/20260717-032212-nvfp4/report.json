@@ -1,0 +1,383 @@
+{
+  "created_at": "2026-07-17T03:22:12.350310+00:00",
+  "label": "nvfp4",
+  "model": "nvidia/nemotron-3-nano",
+  "endpoint": "http://localhost:8999/v1/chat/completions",
+  "settings": {
+    "label": "nvfp4",
+    "base_url": "http://localhost:8999/v1",
+    "prompts": "/home/ka_xuan/.Workspace/nvidia-rag-dgx-spark-demo/benchmarks/llm-precision/prompts.jsonl",
+    "runs": 3,
+    "warmup": 1,
+    "max_tokens": 512,
+    "temperature": 0.0,
+    "enable_thinking": false,
+    "timeout": 300.0
+  },
+  "summary": {
+    "requests": 18,
+    "median_ttft_seconds": 0.09109455450379755,
+    "median_total_seconds": 2.255572269510594,
+    "median_tokens_per_second": 61.82300299173099,
+    "mean_keyword_score": 0.875
+  },
+  "prompts": [
+    {
+      "id": "policy_arithmetic",
+      "prompt": "A mileage policy reimburses the first 500 km at RM0.85 per km and all additional distance at RM0.65 per km. Calculate the reimbursement for 650 km. Show the calculation and final amount.",
+      "expected_keywords": [
+        "425",
+        "97.50",
+        "522.50"
+      ],
+      "matched_keywords": [
+        "425",
+        "97.50",
+        "522.50"
+      ],
+      "keyword_score": 1.0,
+      "median_ttft_seconds": 0.08728694298770279,
+      "median_total_seconds": 2.969504152002628,
+      "median_tokens_per_second": 61.79926353205701,
+      "runs": [
+        {
+          "ttft_seconds": 0.08728694298770279,
+          "total_seconds": 2.96256754299975,
+          "completion_tokens": 178,
+          "tokens_per_second": 61.90700135466924,
+          "content": "**Step\u2011by\u2011step calculation**\n\n| Segment | Distance (km) | Rate (RM per km) | Reimbursement (RM) |\n|---------|---------------|------------------|--------------------|\n| First 500\u202fkm | 500 | 0.85 | \\(500 \\times 0.85 = 425.00\\) |\n| Remaining distance | \\(650 - 500 = 150\\) | 0.65 | \\(150 \\times 0.65 = 97.50\\) |\n| **Total** | \u2014 | \u2014 | \\(425.00 + 97.50 = 522.50\\) |\n\n**Final amount:** **RM\u202f522.50**.",
+          "reasoning": "",
+          "usage": {
+            "prompt_tokens": 68,
+            "total_tokens": 246,
+            "completion_tokens": 178
+          }
+        },
+        {
+          "ttft_seconds": 0.09105046400509309,
+          "total_seconds": 2.9713436880119843,
+          "completion_tokens": 178,
+          "tokens_per_second": 61.79926353205701,
+          "content": "**Step\u2011by\u2011step calculation**\n\n| Segment | Distance (km) | Rate (RM per km) | Reimbursement (RM) |\n|---------|---------------|------------------|--------------------|\n| First 500\u202fkm | 500 | 0.85 | \\(500 \\times 0.85 = 425.00\\) |\n| Remaining distance | \\(650 - 500 = 150\\) | 0.65 | \\(150 \\times 0.65 = 97.50\\) |\n| **Total** | \u2014 | \u2014 | \\(425.00 + 97.50 = 522.50\\) |\n\n**Final amount:** **RM\u202f522.50**.",
+          "reasoning": "",
+          "usage": {
+            "prompt_tokens": 68,
+            "total_tokens": 246,
+            "completion_tokens": 178
+          }
+        },
+        {
+          "ttft_seconds": 0.08688012600759976,
+          "total_seconds": 2.969504152002628,
+          "completion_tokens": 178,
+          "tokens_per_second": 61.74929452985382,
+          "content": "**Step\u2011by\u2011step calculation**\n\n| Segment | Distance (km) | Rate (RM per km) | Reimbursement (RM) |\n|---------|---------------|------------------|--------------------|\n| First 500\u202fkm | 500 | 0.85 | \\(500 \\times 0.85 = 425.00\\) |\n| Remaining distance | \\(650 - 500 = 150\\) | 0.65 | \\(150 \\times 0.65 = 97.50\\) |\n| **Total** | \u2014 | \u2014 | \\(425.00 + 97.50 = 522.50\\) |\n\n**Final amount:** **RM\u202f522.50**.",
+          "reasoning": "",
+          "usage": {
+            "prompt_tokens": 68,
+            "total_tokens": 246,
+            "completion_tokens": 178
+          }
+        }
+      ]
+    },
+    {
+      "id": "constraint_reasoning",
+      "prompt": "Five jobs A, B, C, D, and E must run one at a time. A must run before C. B must run immediately before D. E must run after C. Give one valid execution order and briefly verify every constraint.",
+      "expected_keywords": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ],
+      "matched_keywords": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ],
+      "keyword_score": 1.0,
+      "median_ttft_seconds": 0.08766465799999423,
+      "median_total_seconds": 2.7450180830055615,
+      "median_tokens_per_second": 61.789505203338784,
+      "runs": [
+        {
+          "ttft_seconds": 0.08689647901337594,
+          "total_seconds": 2.7410688900126843,
+          "completion_tokens": 164,
+          "tokens_per_second": 61.789505203338784,
+          "content": "**Valid execution order:**  \n**A \u2192 C \u2192 B \u2192 D \u2192 E**\n\n**Verification of constraints:**\n\n1. **A must run before C**  \n   \u2192 A is at position 1, C is at position 2 \u2192 \u2705 A precedes C.\n\n2. **B must run immediately before D**  \n   \u2192 B is at position 3, D is at position 4 \u2192 they are consecutive and B comes directly before D \u2192 \u2705 Immediate predecessor satisfied.\n\n3. **E must run after C**  \n   \u2192 C is at position 2, E is at position 5 \u2192 E comes after C \u2192 \u2705 Satisfied.\n\nAll constraints are met with this sequence.  \n**Final order: A, C, B, D, E**",
+          "reasoning": "",
+          "usage": {
+            "prompt_tokens": 65,
+            "total_tokens": 229,
+            "completion_tokens": 164
+          }
+        },
+        {
+          "ttft_seconds": 0.09274728900345508,
+          "total_seconds": 2.7450180830055615,
+          "completion_tokens": 164,
+          "tokens_per_second": 61.833806853686504,
+          "content": "**Valid execution order:**  \n**A \u2192 C \u2192 B \u2192 D \u2192 E**\n\n**Verification of constraints:**\n\n1. **A must run before C**  \n   \u2192 A is at position 1, C is at position 2 \u2192 \u2705 A precedes C.\n\n2. **B must run immediately before D**  \n   \u2192 B is at position 3, D is at position 4 \u2192 they are consecutive and B comes directly before D \u2192 \u2705 Immediate predecessor satisfied.\n\n3. **E must run after C**  \n   \u2192 C is at position 2, E is at position 5 \u2192 E comes after C \u2192 \u2705 Satisfied.\n\nAll constraints are met with this sequence.  \n**Final order: A, C, B, D, E**",
+          "reasoning": "",
+          "usage": {
+            "prompt_tokens": 65,
+            "total_tokens": 229,
+            "completion_tokens": 164
+          }
+        },
+        {
+          "ttft_seconds": 0.08766465799999423,
+          "total_seconds": 2.7488553399889497,
+          "completion_tokens": 164,
+          "tokens_per_second": 61.62654976584675,
+          "content": "**Valid execution order:**  \n**A \u2192 C \u2192 B \u2192 D \u2192 E**\n\n**Verification of constraints:**\n\n1. **A must run before C**  \n   \u2192 A is at position 1, C is at position 2 \u2192 \u2705 A precedes C.\n\n2. **B must run immediately before D**  \n   \u2192 B is at position 3, D is at position 4 \u2192 they are consecutive and B comes directly before D \u2192 \u2705 Immediate predecessor satisfied.\n\n3. **E must run after C**  \n   \u2192 C is at position 2, E is at position 5 \u2192 E comes after C \u2192 \u2705 Satisfied.\n\nAll constraints are met with this sequence.  \n**Final order: A, C, B, D, E**",
+          "reasoning": "",
+          "usage": {
+            "prompt_tokens": 65,
+            "total_tokens": 229,
+            "completion_tokens": 164
+          }
+        }
+      ]
+    },
+    {
+      "id": "policy_extraction",
+      "prompt": "Use only this policy excerpt: 'Tier-1 jobs cannot be preempted. Tier-2 jobs may be preempted only by Tier-1 jobs. Tier-3 jobs may be preempted by Tier-1 or Tier-2 jobs.' Explain the difference between Tier-2 and Tier-3 preemption in two concise sentences.",
+      "expected_keywords": [
+        "Tier-1",
+        "Tier-2",
+        "Tier-3"
+      ],
+      "matched_keywords": [
+        "Tier-1",
+        "Tier-2",
+        "Tier-3"
+      ],
+      "keyword_score": 1.0,
+      "median_ttft_seconds": 0.0936465739941923,
+      "median_total_seconds": 1.0875545310118468,
+      "median_tokens_per_second": 62.386815913793875,
+      "runs": [
+        {
+          "ttft_seconds": 0.09382859100878704,
+          "total_seconds": 1.0875545310118468,
+          "completion_tokens": 62,
+          "tokens_per_second": 62.391447686078415,
+          "content": "Tier-2 jobs can only be preempted by higher-priority Tier-1 jobs, while Tier-3 jobs can be preempted by both Tier-1 and Tier-2 jobs. This means Tier-3 jobs have a lower priority than both Tier-1 and Tier-2 jobs.",
+          "reasoning": "",
+          "usage": {
+            "prompt_tokens": 86,
+            "total_tokens": 148,
+            "completion_tokens": 62
+          }
+        },
+        {
+          "ttft_seconds": 0.09355607799079735,
+          "total_seconds": 1.087355794996256,
+          "completion_tokens": 62,
+          "tokens_per_second": 62.386815913793875,
+          "content": "Tier-2 jobs can only be preempted by higher-priority Tier-1 jobs, while Tier-3 jobs can be preempted by both Tier-1 and Tier-2 jobs. This means Tier-3 jobs have a lower priority than both Tier-1 and Tier-2 jobs.",
+          "reasoning": "",
+          "usage": {
+            "prompt_tokens": 86,
+            "total_tokens": 148,
+            "completion_tokens": 62
+          }
+        },
+        {
+          "ttft_seconds": 0.0936465739941923,
+          "total_seconds": 1.0894294059980894,
+          "completion_tokens": 62,
+          "tokens_per_second": 62.26257172483303,
+          "content": "Tier-2 jobs can only be preempted by higher-priority Tier-1 jobs, while Tier-3 jobs can be preempted by both Tier-1 and Tier-2 jobs. This means Tier-3 jobs have a lower priority than both Tier-1 and Tier-2 jobs.",
+          "reasoning": "",
+          "usage": {
+            "prompt_tokens": 86,
+            "total_tokens": 148,
+            "completion_tokens": 62
+          }
+        }
+      ]
+    },
+    {
+      "id": "ambiguity_handling",
+      "prompt": "An employee asks: 'How much can I claim for driving 100 km?' The policy has different mileage rates for Malaysia and Singapore, but the employee did not state a country. Respond as a careful company assistant without assuming their location.",
+      "expected_keywords": [
+        "Malaysia",
+        "Singapore",
+        "country"
+      ],
+      "matched_keywords": [
+        "Malaysia",
+        "Singapore",
+        "country"
+      ],
+      "keyword_score": 1.0,
+      "median_ttft_seconds": 0.09261261799838394,
+      "median_total_seconds": 4.777138217003085,
+      "median_tokens_per_second": 61.48230410110648,
+      "runs": [
+        {
+          "ttft_seconds": 0.09069216100033373,
+          "total_seconds": 4.774966835000669,
+          "completion_tokens": 288,
+          "tokens_per_second": 61.48230410110648,
+          "content": "Thank you for your question! To help you accurately, I need a bit more information: **which country were you driving in** (e.g., Malaysia or Singapore)? The mileage reimbursement rates differ significantly between these two locations, and I want to ensure you receive the correct guidance based on your actual travel.\n\nFor example:\n- In **Malaysia**, the standard rate is typically **RM0.40 per km** (though this may vary slightly depending on company policy or recent updates).\n- In **Singapore**, the rate is often **SGD 0.40 per km** (though again, this can depend on specific company policies or government guidelines).\n\nSince you mentioned driving **100 km**, the calculation would be straightforward once we confirm the country. For instance:\n- If in Malaysia: 100 km \u00d7 RM0.40 = **RM40**\n- If in Singapore: 100 km \u00d7 SGD 0.40 = **SGD 40**\n\nHowever, I strongly recommend checking your company\u2019s official travel policy document or contacting your HR/finance team directly for the most precise and up-to-date rate applicable to your situation. Some companies may have additional rules (e.g., caps on daily claims, specific vehicle types, or regional variations).\n\nLet me know the country, and I\u2019ll provide a clear, tailored answer! \ud83d\ude0a",
+          "reasoning": "",
+          "usage": {
+            "prompt_tokens": 66,
+            "total_tokens": 354,
+            "completion_tokens": 288
+          }
+        },
+        {
+          "ttft_seconds": 0.09637951500189956,
+          "total_seconds": 4.779007724006078,
+          "completion_tokens": 288,
+          "tokens_per_second": 61.50392197403323,
+          "content": "Thank you for your question! To help you accurately, I need a bit more information: **which country were you driving in** (e.g., Malaysia or Singapore)? The mileage reimbursement rates differ significantly between these two locations, and I want to ensure you receive the correct guidance based on your actual travel.\n\nFor example:\n- In **Malaysia**, the standard rate is typically **RM0.40 per km** (though this may vary slightly depending on company policy or recent updates).\n- In **Singapore**, the rate is often **SGD 0.40 per km** (though again, this can depend on specific company policies or government guidelines).\n\nSince you mentioned driving **100 km**, the calculation would be straightforward once we confirm the country. For instance:\n- If in Malaysia: 100 km \u00d7 RM0.40 = **RM40**\n- If in Singapore: 100 km \u00d7 SGD 0.40 = **SGD 40**\n\nHowever, I strongly recommend checking your company\u2019s official travel policy document or contacting your HR/finance team directly for the most precise and up-to-date rate applicable to your situation. Some companies may have additional rules (e.g., caps on daily claims, specific vehicle types, or regional variations).\n\nLet me know the country, and I\u2019ll provide a clear, tailored answer! \ud83d\ude0a",
+          "reasoning": "",
+          "usage": {
+            "prompt_tokens": 66,
+            "total_tokens": 354,
+            "completion_tokens": 288
+          }
+        },
+        {
+          "ttft_seconds": 0.09261261799838394,
+          "total_seconds": 4.777138217003085,
+          "completion_tokens": 288,
+          "tokens_per_second": 61.47901082260923,
+          "content": "Thank you for your question! To help you accurately, I need a bit more information: **which country were you driving in** (e.g., Malaysia or Singapore)? The mileage reimbursement rates differ significantly between these two locations, and I want to ensure you receive the correct guidance based on your actual travel.\n\nFor example:\n- In **Malaysia**, the standard rate is typically **RM0.40 per km** (though this may vary slightly depending on company policy or recent updates).\n- In **Singapore**, the rate is often **SGD 0.40 per km** (though again, this can depend on specific company policies or government guidelines).\n\nSince you mentioned driving **100 km**, the calculation would be straightforward once we confirm the country. For instance:\n- If in Malaysia: 100 km \u00d7 RM0.40 = **RM40**\n- If in Singapore: 100 km \u00d7 SGD 0.40 = **SGD 40**\n\nHowever, I strongly recommend checking your company\u2019s official travel policy document or contacting your HR/finance team directly for the most precise and up-to-date rate applicable to your situation. Some companies may have additional rules (e.g., caps on daily claims, specific vehicle types, or regional variations).\n\nLet me know the country, and I\u2019ll provide a clear, tailored answer! \ud83d\ude0a",
+          "reasoning": "",
+          "usage": {
+            "prompt_tokens": 66,
+            "total_tokens": 354,
+            "completion_tokens": 288
+          }
+        }
+      ]
+    },
+    {
+      "id": "structured_output",
+      "prompt": "Return only valid JSON with keys risk, reason, and action. Scenario: a production database backup has not completed for 36 hours and the recovery objective is 24 hours.",
+      "expected_keywords": [
+        "risk",
+        "reason",
+        "action"
+      ],
+      "matched_keywords": [
+        "risk",
+        "reason",
+        "action"
+      ],
+      "keyword_score": 1.0,
+      "median_ttft_seconds": 0.0866307199903531,
+      "median_total_seconds": 1.7698277629970107,
+      "median_tokens_per_second": 61.812199129775465,
+      "runs": [
+        {
+          "ttft_seconds": 0.0875598760030698,
+          "total_seconds": 1.7700756490085041,
+          "completion_tokens": 104,
+          "tokens_per_second": 61.812199129775465,
+          "content": "{\n  \"risk\": \"Data loss exceeding the 24-hour recovery objective\",\n  \"reason\": \"The production database backup has not completed for 36 hours, which is longer than the allowed recovery window, indicating a failure to meet the RPO and potential unavailability of recent data.\",\n  \"action\": \"Immediately investigate the backup process, restart or re-run the backup job, and verify completion; if the backup cannot be resumed, initiate a manual backup and review backup infrastructure for failures.\"\n}",
+          "reasoning": "",
+          "usage": {
+            "prompt_tokens": 53,
+            "total_tokens": 157,
+            "completion_tokens": 104
+          }
+        },
+        {
+          "ttft_seconds": 0.0866307199903531,
+          "total_seconds": 1.7698277629970107,
+          "completion_tokens": 104,
+          "tokens_per_second": 61.78718078914106,
+          "content": "{\n  \"risk\": \"Data loss exceeding the 24-hour recovery objective\",\n  \"reason\": \"The production database backup has not completed for 36 hours, which is longer than the allowed recovery window, indicating a failure to meet the RPO and potential unavailability of recent data.\",\n  \"action\": \"Immediately investigate the backup process, restart or re-run the backup job, and verify completion; if the backup cannot be resumed, initiate a manual backup and review backup infrastructure for failures.\"\n}",
+          "reasoning": "",
+          "usage": {
+            "prompt_tokens": 53,
+            "total_tokens": 157,
+            "completion_tokens": 104
+          }
+        },
+        {
+          "ttft_seconds": 0.08644945500418544,
+          "total_seconds": 1.7678580770007102,
+          "completion_tokens": 104,
+          "tokens_per_second": 61.8529003833162,
+          "content": "{\n  \"risk\": \"Data loss exceeding the 24-hour recovery objective\",\n  \"reason\": \"The production database backup has not completed for 36 hours, which is longer than the allowed recovery window, indicating a failure to meet the RPO and potential unavailability of recent data.\",\n  \"action\": \"Immediately investigate the backup process, restart or re-run the backup job, and verify completion; if the backup cannot be resumed, initiate a manual backup and review backup infrastructure for failures.\"\n}",
+          "reasoning": "",
+          "usage": {
+            "prompt_tokens": 53,
+            "total_tokens": 157,
+            "completion_tokens": 104
+          }
+        }
+      ]
+    },
+    {
+      "id": "faithfulness",
+      "prompt": "Use only the following context. Context: The maintenance window is Sunday 01:00-03:00 UTC. Emergency changes require approval from the incident commander. Question: Can a routine change be deployed Saturday at 22:00 UTC? Explain briefly.",
+      "expected_keywords": [
+        "No",
+        "Sunday",
+        "01:00",
+        "03:00"
+      ],
+      "matched_keywords": [
+        "No"
+      ],
+      "keyword_score": 0.25,
+      "median_ttft_seconds": 0.09416401899943594,
+      "median_total_seconds": 0.768407883006148,
+      "median_tokens_per_second": 62.29200181431965,
+      "runs": [
+        {
+          "ttft_seconds": 0.10738407999451738,
+          "total_seconds": 0.7829114699998172,
+          "completion_tokens": 42,
+          "tokens_per_second": 62.17364480168671,
+          "content": "Yes. Routine changes are not restricted to the maintenance window, so they can be deployed on Saturday at 22:00\u202fUTC. (Only emergency changes need incident\u2011commander approval.)",
+          "reasoning": "",
+          "usage": {
+            "prompt_tokens": 73,
+            "total_tokens": 115,
+            "completion_tokens": 42
+          }
+        },
+        {
+          "ttft_seconds": 0.09416401899943594,
+          "total_seconds": 0.768407883006148,
+          "completion_tokens": 42,
+          "tokens_per_second": 62.29200181431965,
+          "content": "Yes. Routine changes are not restricted to the maintenance window, so they can be deployed on Saturday at 22:00\u202fUTC. (Only emergency changes need incident\u2011commander approval.)",
+          "reasoning": "",
+          "usage": {
+            "prompt_tokens": 73,
+            "total_tokens": 115,
+            "completion_tokens": 42
+          }
+        },
+        {
+          "ttft_seconds": 0.09113864500250202,
+          "total_seconds": 0.7650627640105085,
+          "completion_tokens": 42,
+          "tokens_per_second": 62.321556411755346,
+          "content": "Yes. Routine changes are not restricted to the maintenance window, so they can be deployed on Saturday at 22:00\u202fUTC. (Only emergency changes need incident\u2011commander approval.)",
+          "reasoning": "",
+          "usage": {
+            "prompt_tokens": 73,
+            "total_tokens": 115,
+            "completion_tokens": 42
+          }
+        }
+      ]
+    }
+  ]
+}

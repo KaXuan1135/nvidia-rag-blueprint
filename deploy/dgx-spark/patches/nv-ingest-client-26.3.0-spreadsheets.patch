@@ -1,0 +1,31 @@
+--- a/nv_ingest_client/util/file_processing/extract.py
++++ b/nv_ingest_client/util/file_processing/extract.py
+@@ -38,4 +38,5 @@ EXTENSION_TO_DOCUMENT_TYPE = {
+     "bmp": DocumentTypeEnum.BMP,
++    "csv": DocumentTypeEnum.TXT,
+     "docx": DocumentTypeEnum.DOCX,
+     "html": DocumentTypeEnum.HTML,
+     "jpeg": DocumentTypeEnum.JPEG,
+@@ -53,6 +54,7 @@ EXTENSION_TO_DOCUMENT_TYPE = {
+     "wav": DocumentTypeEnum.WAV,
+     "mp4": DocumentTypeEnum.MP4,
+     "mov": DocumentTypeEnum.MOV,
++    "xlsx": DocumentTypeEnum.TXT,
+     "avi": DocumentTypeEnum.AVI,
+     "mkv": DocumentTypeEnum.MKV,
+     # Add more as needed
+@@ -124,6 +126,14 @@ def detect_encoding_and_read_text_file(file_stream: BytesIO) -> str:
+
+ def extract_file_content(path: str) -> Tuple[str, DocumentTypeEnum]:
+     """Extracts content from a file, supporting different formats."""
++    extension = os.path.splitext(path)[1].lower()
++    if extension in {".csv", ".xlsx"}:
++        from nvidia_rag.utils.spreadsheet import spreadsheet_to_markdown
++
++        content = spreadsheet_to_markdown(path)
++        logger.debug(f"Spreadsheet content extracted from '{path}'")
++        return content, DocumentTypeEnum.TXT
++
+     document_type = get_or_infer_file_type(path)
+
+     with open(path, "rb") as file:

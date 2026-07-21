@@ -768,7 +768,9 @@ def get_streaming_filter_think_parser():
         return RunnablePassthrough()
 
 
-async def streaming_split_reasoning_async(chunks):
+async def streaming_split_reasoning_async(
+    chunks, assume_reasoning_prefix: bool = False
+):
     """
     Split streamed LLM chunks into answer content and reasoning content.
 
@@ -778,6 +780,9 @@ async def streaming_split_reasoning_async(chunks):
     - ``reasoning`` / ``reasoning_content`` fields become reasoning chunks.
     - text inside ``<think>...</think>`` becomes reasoning chunks.
     - text outside ``<think>...</think>`` remains answer content.
+    - when ``assume_reasoning_prefix`` is true, leading content is reasoning
+      until ``</think>``. This handles Nemotron 3 Nano NIM responses that omit
+      the opening tag while retaining the closing tag.
 
     Yields:
         AIMessageChunk: answer chunks use ``content``; reasoning chunks use
@@ -788,7 +793,7 @@ async def streaming_split_reasoning_async(chunks):
     normal = "normal"
     in_think = "in_think"
 
-    state = normal
+    state = in_think if assume_reasoning_prefix else normal
     tag_buffer = ""
     content_buffer = ""
     reasoning_buffer = ""
@@ -816,6 +821,10 @@ async def streaming_split_reasoning_async(chunks):
 
         if reasoning:
             yield _reasoning_chunk(reasoning)
+            # A structured reasoning field is an unambiguous boundary. Content
+            # from the same or later chunks is therefore the final answer.
+            if assume_reasoning_prefix and state == in_think:
+                state = normal
 
         emitted: list[AIMessageChunk] = []
         for char in content:
@@ -884,7 +893,11 @@ async def streaming_split_reasoning_async(chunks):
     )
 
 
-async def streaming_filter_think_async(chunks, enable_thinking: bool = False):
+async def streaming_filter_think_async(
+    chunks,
+    enable_thinking: bool = False,
+    assume_reasoning_prefix: bool = False,
+):
     """
     Async version of streaming_filter_think.
     This async generator filters content between think tags in streaming LLM responses.
@@ -900,10 +913,22 @@ async def streaming_filter_think_async(chunks, enable_thinking: bool = False):
         chunks: Async iterable of chunks from a streaming LLM response
         enable_thinking: When True, drop reasoning_content (genuine chain-of-thought).
             When False, fall back to reasoning_content if content is empty (model quirk).
+        assume_reasoning_prefix: Treat leading content as reasoning until a closing
+            ``</think>`` tag is observed. Intended for Nemotron 3 Nano NIM output
+            that omits the opening tag.
 
     Yields:
         str: Filtered content with think blocks removed
     """
+    if assume_reasoning_prefix:
+        async for parsed_chunk in streaming_split_reasoning_async(
+            chunks, assume_reasoning_prefix=True
+        ):
+            _, parsed_content = extract_reasoning_and_content(parsed_chunk)
+            if parsed_content:
+                yield parsed_content
+        return
+
     # Complete tags
     FULL_START_TAG = "<think>"
     FULL_END_TAG = "</think>"
@@ -1090,6 +1115,7 @@ async def _content_fallback_async(chunks, enable_thinking: bool = False):
 def get_streaming_filter_think_parser_async(
     enable_thinking: bool = False,
     preserve_reasoning_content: bool = False,
+    assume_reasoning_prefix: bool = False,
 ):
     """
     Creates and returns an async RunnableGenerator for filtering think tokens.
@@ -1109,6 +1135,9 @@ def get_streaming_filter_think_parser_async(
             content is empty (workaround for model quirk).
         preserve_reasoning_content: Preserve observed reasoning structurally
             instead of dropping or merging it into answer content.
+        assume_reasoning_prefix: Treat content before a closing ``</think>`` tag
+            as reasoning. This is scoped by callers to models known to omit the
+            opening tag.
 
     Returns:
         RunnableGenerator: An async parser for filtering or content normalization
@@ -1119,14 +1148,25 @@ def get_streaming_filter_think_parser_async(
 
     if preserve_reasoning_content:
         logger.info("Reasoning-content preservation is enabled (async)")
-        return RunnableGenerator(streaming_split_reasoning_async)
+        return RunnableGenerator(
+            partial(
+                streaming_split_reasoning_async,
+                assume_reasoning_prefix=assume_reasoning_prefix,
+            )
+        )
 
     # Check environment variable
     filter_enabled = os.getenv("FILTER_THINK_TOKENS", "true").lower() == "true"
 
     if filter_enabled:
         logger.info("Think token filtering is enabled (async), enable_thinking=%s", enable_thinking)
-        return RunnableGenerator(partial(streaming_filter_think_async, enable_thinking=enable_thinking))
+        return RunnableGenerator(
+            partial(
+                streaming_filter_think_async,
+                enable_thinking=enable_thinking,
+                assume_reasoning_prefix=assume_reasoning_prefix,
+            )
+        )
     else:
         logger.info("Think token filtering is disabled (async), enable_thinking=%s", enable_thinking)
         return RunnableGenerator(partial(_content_fallback_async, enable_thinking=enable_thinking))

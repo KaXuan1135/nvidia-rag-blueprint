@@ -36,6 +36,8 @@ TEXT_LIKE_EXTENSIONS = frozenset({
     "json",
     "sh",
     "html",
+    "csv",
+    "xlsx",
 })
 
 # Optimal batch parameters for text-like files

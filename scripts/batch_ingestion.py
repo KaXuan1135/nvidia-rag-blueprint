@@ -39,6 +39,7 @@ import requests
 
 DEFAULT_PORT = 8082
 POLL_INTERVAL = 5  # seconds
+STATUS_LOG_INTERVAL = 30  # seconds
 POLL_TIMEOUT = 60 * 60 * 6  # 6 hours
 
 
@@ -232,6 +233,7 @@ class IngestionClient:
         spinner_idx = 0
         spinner_enabled = sys.stdout.isatty()
         last_spinner_len = 0
+        last_status_log = -STATUS_LOG_INTERVAL
 
         def draw_spinner():
             nonlocal spinner_idx, last_spinner_len
@@ -297,9 +299,16 @@ class IngestionClient:
                 status_json = {"state": "UNKNOWN", "raw": response.text}
 
             state = (status_json or {}).get("state")
-            if int(elapsed) % 600 < POLL_INTERVAL:
+            if elapsed - last_status_log >= STATUS_LOG_INTERVAL:
                 clear_spinner_line()
-                self.logger.info(f"    - Task status after {elapsed:.0f}s: {state}")
+                nv_ingest_status = status_json.get("nv_ingest_status", {})
+                completed = nv_ingest_status.get("extraction_completed", 0)
+                total = status_json.get("result", {}).get("total_documents", "?")
+                self.logger.info(
+                    f"    - Task status after {elapsed:.0f}s: {state}; "
+                    f"extraction completed: {completed}/{total}"
+                )
+                last_status_log = elapsed
 
             if state == "FINISHED":
                 clear_spinner_line()
@@ -343,6 +352,8 @@ def _guess_content_type(path: Path) -> str:
         return "text/markdown"
     if ext in {".csv"}:
         return "text/csv"
+    if ext in {".xlsx"}:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     if ext in {".png"}:
         return "image/png"
     if ext in {".jpg", ".jpeg"}:
@@ -406,7 +417,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--allowed-exts",
         nargs="*",
-        default=[".pdf", ".docx", ".txt", ".md", ".csv", ".png", ".jpg", ".jpeg"],
+        default=[
+            ".pdf",
+            ".docx",
+            ".txt",
+            ".md",
+            ".csv",
+            ".xlsx",
+            ".png",
+            ".jpg",
+            ".jpeg",
+        ],
         help="Filter by file extensions (default: common doc/image types)",
     )
     parser.add_argument(

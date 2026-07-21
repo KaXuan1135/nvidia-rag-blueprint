@@ -32,6 +32,7 @@ from nvidia_rag.utils.llm import (
     get_prompts,
     get_streaming_filter_think_parser,
     streaming_filter_think,
+    streaming_filter_think_async,
     streaming_split_reasoning_async,
 )
 
@@ -649,13 +650,15 @@ class TestStreamingSplitReasoningAsync:
             chunk.additional_kwargs["reasoning"] = reasoning
         return chunk
 
-    async def _collect(self, chunks):
+    async def _collect(self, chunks, assume_reasoning_prefix=False):
         async def gen():
             for chunk in chunks:
                 yield chunk
 
         result = []
-        async for chunk in streaming_split_reasoning_async(gen()):
+        async for chunk in streaming_split_reasoning_async(
+            gen(), assume_reasoning_prefix=assume_reasoning_prefix
+        ):
             result.append(
                 (
                     chunk.content,
@@ -711,6 +714,68 @@ class TestStreamingSplitReasoningAsync:
         result = await self._collect(chunks)
 
         assert result == [("Hello ", None), ("world", None)]
+
+    @pytest.mark.asyncio
+    async def test_closing_tag_only_splits_reasoning_prefix(self):
+        chunks = [
+            self.create_mock_chunk("We need to reason.</think>Final answer"),
+        ]
+
+        result = await self._collect(chunks, assume_reasoning_prefix=True)
+
+        assert result == [("", "We need to reason."), ("Final answer", None)]
+
+    @pytest.mark.asyncio
+    async def test_split_closing_tag_splits_reasoning_prefix(self):
+        chunks = [
+            self.create_mock_chunk("Reasoning"),
+            self.create_mock_chunk("</th"),
+            self.create_mock_chunk("ink>"),
+            self.create_mock_chunk("Answer"),
+        ]
+
+        result = await self._collect(chunks, assume_reasoning_prefix=True)
+
+        assert result == [("", "Reasoning"), ("Answer", None)]
+
+    @pytest.mark.asyncio
+    async def test_unclosed_reasoning_prefix_never_becomes_answer(self):
+        chunks = [self.create_mock_chunk("Truncated reasoning")]
+
+        result = await self._collect(chunks, assume_reasoning_prefix=True)
+
+        assert result == [("", "Truncated reasoning")]
+
+    @pytest.mark.asyncio
+    async def test_structured_reasoning_disables_prefix_assumption(self):
+        chunks = [
+            self.create_mock_chunk(reasoning_content="Structured reasoning"),
+            self.create_mock_chunk(content="Final answer"),
+        ]
+
+        result = await self._collect(chunks, assume_reasoning_prefix=True)
+
+        assert result == [("", "Structured reasoning"), ("Final answer", None)]
+
+    @pytest.mark.asyncio
+    async def test_filter_discards_closing_tag_only_reasoning_prefix(self):
+        chunks = [
+            self.create_mock_chunk("Hidden reasoning"),
+            self.create_mock_chunk("</th"),
+            self.create_mock_chunk("ink>Visible answer"),
+        ]
+
+        async def gen():
+            for chunk in chunks:
+                yield chunk
+
+        result = []
+        async for text in streaming_filter_think_async(
+            gen(), enable_thinking=True, assume_reasoning_prefix=True
+        ):
+            result.append(text)
+
+        assert result == ["Visible answer"]
 
 
 class TestLLMIntegration:

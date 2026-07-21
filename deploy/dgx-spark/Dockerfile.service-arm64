@@ -1,0 +1,69 @@
+FROM ghcr.io/astral-sh/uv:0.8.12 AS uv
+
+FROM python:3.13-slim-bookworm AS python-env
+
+ARG SERVICE_EXTRA
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV UV_LINK_MODE=copy
+
+COPY --from=uv /uv /uvx /bin/
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        curl \
+        file \
+        libgl1 \
+        libglib2.0-0 \
+        libmagic1 \
+        patch \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /workspace
+
+COPY pyproject.toml uv.lock README.md LICENSE ./
+COPY src ./src
+COPY deploy/dgx-spark/patches ./deploy/dgx-spark/patches
+
+RUN uv sync \
+        --locked \
+        --no-install-project \
+        --no-dev \
+        --extra "${SERVICE_EXTRA}" \
+        --extra elasticsearch \
+    && patch \
+        -d /workspace/.venv/lib/python3.13/site-packages \
+        -p1 \
+        < deploy/dgx-spark/patches/nv-ingest-client-26.3.0-empty-metadata.patch \
+    && patch \
+        -d /workspace/.venv/lib/python3.13/site-packages \
+        -p1 \
+        < deploy/dgx-spark/patches/nv-ingest-client-26.3.0-spreadsheets.patch \
+    && uv build \
+    && uv pip install --no-deps dist/nvidia_rag-*.whl
+
+FROM python:3.13-slim-bookworm AS runtime
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PATH="/workspace/.venv/bin:${PATH}"
+ENV HF_HOME=/tmp-data
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        curl \
+        libexpat1 \
+        libgl1 \
+        libglib2.0-0 \
+        libmagic1 \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /tmp-data \
+    && chmod 777 /tmp-data
+
+WORKDIR /workspace
+
+COPY --from=python-env /workspace/.venv /workspace/.venv
+
+EXPOSE 8081 8082

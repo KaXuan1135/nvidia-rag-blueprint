@@ -1,0 +1,36 @@
+services:
+  ingestor-server:
+    image: local/nvidia-rag-ingestor:${TAG:-2.6.0}-arm64
+    platform: linux/arm64
+    pull_policy: never
+    build:
+      context: ../../
+      dockerfile: deploy/dgx-spark/Dockerfile.service-arm64
+      args:
+        SERVICE_EXTRA: ingest
+    entrypoint:
+      - uvicorn
+      - nvidia_rag.ingestor_server.server:app
+    environment:
+      NVIDIA_API_KEY: local
+
+  nv-ingest-ms-runtime:
+    image: local/nv-ingest:${NV_INGEST_VERSION:-26.3.0}-arm64
+    platform: linux/arm64
+    pull_policy: never
+    build:
+      context: ${NV_INGEST_SOURCE_DIR}
+      dockerfile: Dockerfile
+      target: runtime
+      args:
+        BASE_IMG: ubuntu
+        BASE_IMG_TAG: "22.04"
+        RELEASE_TYPE: release
+        VERSION: ${NV_INGEST_VERSION:-26.3.0}
+        VERSION_REV: "0"
+    environment:
+      NVIDIA_API_KEY: local
+      NVIDIA_BUILD_API_KEY: local
+      OTEL_TRACES_EXPORTER: "none"
+      OTEL_METRICS_EXPORTER: "none"
+      OTEL_LOGS_EXPORTER: "none"

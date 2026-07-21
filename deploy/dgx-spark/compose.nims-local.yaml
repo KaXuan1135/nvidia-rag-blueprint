@@ -1,0 +1,175 @@
+x-gpu: &single-gb10
+  resources:
+    reservations:
+      devices:
+        - driver: nvidia
+          count: all
+          capabilities: [gpu]
+
+x-triton-health: &triton-health
+  test: ["CMD", "curl", "--fail", "http://localhost:8000/v1/health/ready"]
+  interval: 30s
+  timeout: 20s
+  retries: 60
+  start_period: 30m
+
+services:
+  nim-llm:
+    container_name: nim-llm-ms
+    image: nvcr.io/nim/nvidia/nemotron-3-nano:${NEMOTRON_NANO_TAG:-2.0.5}
+    platform: linux/arm64
+    shm_size: 16gb
+    ports:
+      - "8999:8000"
+    expose:
+      - "8000"
+    volumes:
+      - rag-vol-nim-cache:/opt/nim/.cache
+    environment:
+      NGC_API_KEY: ${NGC_API_KEY:?NGC_API_KEY is required}
+      NIM_MODEL_PROFILE: ${NEMOTRON_NANO_PROFILE:-}
+      NIM_MAX_MODEL_LEN: ${NEMOTRON_NANO_CONTEXT_LENGTH:-32768}
+      NIM_RELAX_MEM_CONSTRAINTS: "1"
+      NIM_ENABLE_KV_CACHE_REUSE: "1"
+      VLLM_USE_FLASHINFER_MOE_FP4: "0"
+      NCCL_NVLS_ENABLE: "0"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import requests; requests.get('http://localhost:8000/v1/health/ready').raise_for_status()"]
+      interval: 30s
+      timeout: 20s
+      retries: 60
+      start_period: 30m
+    deploy: *single-gb10
+
+  nemotron-vlm-embedding-ms:
+    container_name: nemotron-vlm-embedding-ms
+    image: nvcr.io/nim/nvidia/llama-nemotron-embed-vl-1b-v2:${NEMOTRON_EMBED_TAG:-1.12.0}
+    platform: linux/arm64
+    shm_size: 8gb
+    ports:
+      - "9081:8000"
+    expose:
+      - "8000"
+    volumes:
+      - rag-vol-nim-cache:/opt/nim/.cache
+    environment:
+      NGC_API_KEY: ${NGC_API_KEY:?NGC_API_KEY is required}
+      NIM_TRT_ENGINE_HOST_CODE_ALLOWED: "1"
+    healthcheck: *triton-health
+    deploy: *single-gb10
+
+  nemotron-ranking-ms:
+    container_name: nemotron-ranking-ms
+    image: nvcr.io/nim/nvidia/llama-nemotron-rerank-1b-v2:${NEMOTRON_RERANK_TAG:-1.10.0}
+    platform: linux/arm64
+    shm_size: 8gb
+    ports:
+      - "1976:8000"
+    expose:
+      - "8000"
+    volumes:
+      - rag-vol-nim-cache:/opt/nim/.cache
+    environment:
+      NGC_API_KEY: ${NGC_API_KEY:?NGC_API_KEY is required}
+    healthcheck: *triton-health
+    deploy: *single-gb10
+
+  page-elements:
+    container_name: nemotron-page-elements
+    image: nvcr.io/nim/nvidia/nemotron-page-elements-v3:${NEMOTRON_PAGE_ELEMENTS_TAG:-1.8.0}
+    platform: linux/arm64
+    shm_size: 8gb
+    ports:
+      - "8000:8000"
+    expose:
+      - "8000"
+      - "8001"
+    volumes:
+      - rag-vol-nim-cache:/opt/nim/.cache
+    environment:
+      NGC_API_KEY: ${NGC_API_KEY:?NGC_API_KEY is required}
+      NIM_HTTP_API_PORT: "8000"
+      NIM_TRITON_MAX_BATCH_SIZE: ${PAGE_ELEMENTS_BATCH_SIZE:-4}
+      NIM_TRITON_CPU_THREADS_PRE_PROCESSOR: ${PAGE_ELEMENTS_CPU_THREADS_PRE_PROCESSOR:-2}
+      NIM_TRITON_CPU_THREADS_POST_PROCESSOR: ${PAGE_ELEMENTS_CPU_THREADS_POST_PROCESSOR:-1}
+      NIM_ENABLE_OTEL: "0"
+      OMP_NUM_THREADS: "2"
+    healthcheck: *triton-health
+    deploy: *single-gb10
+
+  graphic-elements:
+    container_name: nemotron-graphic-elements
+    image: nvcr.io/nim/nvidia/nemotron-graphic-elements-v1:${NEMOTRON_GRAPHIC_ELEMENTS_TAG:-1.8.0}
+    platform: linux/arm64
+    shm_size: 8gb
+    ports:
+      - "8003:8000"
+    expose:
+      - "8000"
+      - "8001"
+    volumes:
+      - rag-vol-nim-cache:/opt/nim/.cache
+    environment:
+      NGC_API_KEY: ${NGC_API_KEY:?NGC_API_KEY is required}
+      NIM_HTTP_API_PORT: "8000"
+      NIM_TRITON_MAX_BATCH_SIZE: ${GRAPHIC_ELEMENTS_BATCH_SIZE:-4}
+      NIM_TRITON_CUDA_MEMORY_POOL_MB: ${GRAPHIC_ELEMENTS_CUDA_MEMORY_POOL_MB:-1024}
+      OMP_NUM_THREADS: "1"
+    healthcheck: *triton-health
+    deploy: *single-gb10
+
+  table-structure:
+    container_name: nemotron-table-structure
+    image: nvcr.io/nim/nvidia/nemotron-table-structure-v1:${NEMOTRON_TABLE_STRUCTURE_TAG:-1.8.0}
+    platform: linux/arm64
+    shm_size: 8gb
+    ports:
+      - "8006:8000"
+    expose:
+      - "8000"
+      - "8001"
+    volumes:
+      - rag-vol-nim-cache:/opt/nim/.cache
+    environment:
+      NGC_API_KEY: ${NGC_API_KEY:?NGC_API_KEY is required}
+      NIM_HTTP_API_PORT: "8000"
+      NIM_TRITON_MAX_BATCH_SIZE: ${TABLE_STRUCTURE_BATCH_SIZE:-4}
+      NIM_TRITON_CUDA_MEMORY_POOL_MB: ${TABLE_STRUCTURE_CUDA_MEMORY_POOL_MB:-1024}
+      OMP_NUM_THREADS: "1"
+    healthcheck: *triton-health
+    deploy: *single-gb10
+
+  nemotron-ocr:
+    container_name: nemotron-ocr
+    image: local/nvidia-rag-nemotron-ocr:1.0.0-arm64
+    build:
+      context: ../..
+      dockerfile: services/nemotron-ocr-arm64/Dockerfile
+      additional_contexts:
+        nemotron_ocr_package: ${NEMOTRON_OCR_SOURCE_DIR:?NEMOTRON_OCR_SOURCE_DIR is required}/nemotron-ocr
+        nemotron_ocr_checkpoints: ${NEMOTRON_OCR_SOURCE_DIR:?NEMOTRON_OCR_SOURCE_DIR is required}/checkpoints
+      args:
+        CUDA_ARCH_LIST: ${NEMOTRON_OCR_CUDA_ARCH_LIST:-12.1+PTX}
+    platform: linux/arm64
+    shm_size: 8gb
+    ports:
+      - "8012:8000"
+    expose:
+      - "8000"
+    environment:
+      NEMOTRON_OCR_MODEL_DIR: /opt/models/nemotron-ocr-v1
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8000/v1/health/ready"]
+      interval: 30s
+      timeout: 20s
+      retries: 60
+      start_period: 30m
+    deploy: *single-gb10
+
+networks:
+  default:
+    name: nvidia-rag
+
+volumes:
+  rag-vol-nim-cache:
+    name: rag-vol-nim-cache

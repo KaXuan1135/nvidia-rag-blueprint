@@ -11,6 +11,8 @@ dist/*
 deploy/compose/volumes
 uploaded_files/
 **tmp-data**
+.env.dgx-spark
+.sources/
 
 # Visual Studio Code
 .vscode
@@ -84,5 +86,12 @@ tests/data/
 /.agents/
 /.claude/
 skills-lock.json
+
+# Local backup files
+*.orig
+
+# Generated ingestion benchmark artifacts
+/benchmarks/ingestion/corpus*/
+/benchmarks/ingestion/results/
 
 # Workbench Project Layout
