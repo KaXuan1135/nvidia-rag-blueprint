@@ -33,14 +33,18 @@ RUN uv sync \
         --no-dev \
         --extra "${SERVICE_EXTRA}" \
         --extra elasticsearch \
-    && patch \
-        -d /workspace/.venv/lib/python3.13/site-packages \
-        -p1 \
-        < deploy/dgx-spark/patches/nv-ingest-client-26.3.0-empty-metadata.patch \
-    && patch \
-        -d /workspace/.venv/lib/python3.13/site-packages \
-        -p1 \
-        < deploy/dgx-spark/patches/nv-ingest-client-26.3.0-spreadsheets.patch \
+    && if [ -d /workspace/.venv/lib/python3.13/site-packages/nv_ingest_client ]; then \
+        patch --batch --forward \
+            -d /workspace/.venv/lib/python3.13/site-packages \
+            -p1 \
+            < deploy/dgx-spark/patches/nv-ingest-client-26.3.0-empty-metadata.patch; \
+        patch --batch --forward \
+            -d /workspace/.venv/lib/python3.13/site-packages \
+            -p1 \
+            < deploy/dgx-spark/patches/nv-ingest-client-26.3.0-spreadsheets.patch; \
+    else \
+        echo "nv-ingest-client is not installed for ${SERVICE_EXTRA}; skipping compatibility patches"; \
+    fi \
     && uv build \
     && uv pip install --no-deps dist/nvidia_rag-*.whl
 

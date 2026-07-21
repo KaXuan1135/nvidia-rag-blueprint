@@ -58,6 +58,64 @@ describe('ReasoningPanel', () => {
     );
   });
 
+  it('shows a live foldout for standard model thinking', () => {
+    render(
+      <ReasoningPanel
+        streaming
+        steps={[
+          buildStep({
+            stage: 'rag',
+            reasoning: 'Inspecting the retrieved context.',
+            status: 'running',
+          }),
+        ]}
+      />
+    );
+
+    expect(screen.getByTestId('reasoning-panel-toggle')).toHaveTextContent(
+      'Thinking...'
+    );
+    expect(screen.getByTestId('reasoning-panel')).toHaveAttribute(
+      'data-state',
+      'open'
+    );
+    expect(screen.getByTestId('standard-reasoning-content')).toHaveTextContent(
+      'Inspecting the retrieved context.'
+    );
+    expect(screen.queryByTestId('reasoning-step-rag')).not.toBeInTheDocument();
+  });
+
+  it('collapses standard thinking when final-answer streaming begins', () => {
+    const runningStep = buildStep({
+      stage: 'rag',
+      reasoning: 'Inspecting the retrieved context.',
+      status: 'running',
+    });
+    const { rerender } = render(
+      <ReasoningPanel streaming steps={[runningStep]} />
+    );
+
+    expect(screen.getByTestId('reasoning-panel')).toHaveAttribute(
+      'data-state',
+      'open'
+    );
+
+    rerender(
+      <ReasoningPanel
+        streaming={false}
+        steps={[{ ...runningStep, status: 'done' }]}
+      />
+    );
+
+    expect(screen.getByTestId('reasoning-panel-toggle')).toHaveTextContent(
+      'Thinking'
+    );
+    expect(screen.getByTestId('reasoning-panel')).toHaveAttribute(
+      'data-state',
+      'closed'
+    );
+  });
+
   it('formats the stage identifier into a human-readable label without code change', () => {
     render(
       <ReasoningPanel

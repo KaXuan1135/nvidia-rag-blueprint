@@ -122,8 +122,8 @@ const StepRow = ({
  * the assistant's final answer.
  *
  * - Hidden when there are no steps.
- * - Auto-expanded while the message is streaming so users can watch the
- *   agent work; collapses on completion to a "Thought for N steps" line.
+ * - Auto-expanded while reasoning is active so users can watch it stream;
+ *   collapses when the model begins its final answer.
  * - Step labels are formatted via `useCitationUtils.formatStage` so any
  *   future graph node renders without code changes.
  */
@@ -148,9 +148,15 @@ export const ReasoningPanel = ({ steps, streaming = false }: ReasoningPanelProps
   if (!steps || steps.length === 0) return null;
 
   const stepCount = steps.length;
-  const headerLabel = streaming
-    ? `Thinking (${stepCount} step${stepCount === 1 ? "" : "s"})`
-    : `Thought for ${stepCount} step${stepCount === 1 ? "" : "s"}`;
+  const isStandardReasoning =
+    stepCount === 1 && steps[0].stage === "rag";
+  const headerLabel = isStandardReasoning
+    ? streaming
+      ? "Thinking..."
+      : "Thinking"
+    : streaming
+      ? `Thinking (${stepCount} step${stepCount === 1 ? "" : "s"})`
+      : `Thought for ${stepCount} step${stepCount === 1 ? "" : "s"}`;
 
   return (
     <Block
@@ -191,15 +197,30 @@ export const ReasoningPanel = ({ steps, streaming = false }: ReasoningPanelProps
       </Flex>
       {open && (
         <Block style={{ paddingTop: "8px" }}>
-          <Stack gap="density-sm">
-            {steps.map((step, index) => (
-              <StepRow
-                key={`${step.stage}-${index}`}
-                step={step}
-                formatStage={formatStage}
-              />
-            ))}
-          </Stack>
+          {isStandardReasoning ? (
+            <Text
+              kind="body/regular/sm"
+              data-testid="standard-reasoning-content"
+              style={{
+                color: "var(--text-color-subtle)",
+                whiteSpace: "pre-wrap",
+                fontFamily: "var(--font-mono)",
+                fontSize: "0.85em",
+              }}
+            >
+              {steps[0].reasoning}
+            </Text>
+          ) : (
+            <Stack gap="density-sm">
+              {steps.map((step, index) => (
+                <StepRow
+                  key={`${step.stage}-${index}`}
+                  step={step}
+                  formatStage={formatStage}
+                />
+              ))}
+            </Stack>
+          )}
         </Block>
       )}
     </Block>

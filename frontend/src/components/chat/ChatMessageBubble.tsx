@@ -103,11 +103,13 @@ const StreamingMessage = ({
 }) => {
   const textContent = extractTextFromContent(msg.content);
   const reasoningSteps = msg.reasoning_steps;
+  const isReasoning =
+    reasoningSteps?.some((step) => step.status === "running") ?? false;
   return (
     <MessageContainer role="assistant" isError={isError}>
       <Stack gap="2">
         {reasoningSteps && reasoningSteps.length > 0 && (
-          <ReasoningPanel steps={reasoningSteps} streaming />
+          <ReasoningPanel steps={reasoningSteps} streaming={isReasoning} />
         )}
         <Flex align="center" gap="2">
           <MessageContent content={textContent} />

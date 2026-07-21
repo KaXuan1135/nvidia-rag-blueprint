@@ -182,7 +182,9 @@ export const useChatStream = () => {
         citations:
           latestCitations && latestCitations.length ? latestCitations : undefined,
         is_error: isError,
-        reasoning_steps: steps.length ? [...steps] : undefined,
+        reasoning_steps: steps.length
+          ? steps.map((step) => ({ ...step }))
+          : undefined,
         metrics,
       });
     };
@@ -271,7 +273,10 @@ export const useChatStream = () => {
               closeRunningSteps(steps, "error");
             }
           } else if (eventType === FINAL_ANSWER_EVENT) {
-            if (deltaContent) content += deltaContent;
+            if (deltaContent) {
+              closeRunningSteps(steps);
+              content += deltaContent;
+            }
           } else if (eventType !== undefined) {
             // agent_event or future / unknown event types:
             // forward-compat — capture any reasoning_content into the
@@ -286,7 +291,16 @@ export const useChatStream = () => {
               const step = ensureOpenStep(steps, stage ?? STANDARD_RAG_STAGE);
               step.reasoning += reasoningContent;
             }
-            if (deltaContent) content += deltaContent;
+            if (deltaContent) {
+              const standardStep = steps[steps.length - 1];
+              if (
+                standardStep?.stage === STANDARD_RAG_STAGE &&
+                standardStep.status === "running"
+              ) {
+                standardStep.status = "done";
+              }
+              content += deltaContent;
+            }
           }
 
           // Citations and metrics may arrive on any agentic chunk, but the

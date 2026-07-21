@@ -173,6 +173,32 @@ describe('ChatMessageBubble', () => {
       expect(screen.getByTestId('streaming-indicator')).toBeInTheDocument();
     });
 
+    it('shows Thinking... while the streamed message is reasoning', () => {
+      mockUseStreamingStore.mockReturnValue({
+        isStreaming: true,
+        streamingMessageId: 'assistant-1'
+      });
+
+      const streamingMessage: ChatMessage = {
+        ...mockAssistantMessage,
+        content: '',
+        reasoning_steps: [
+          {
+            stage: 'rag',
+            reasoning: 'Checking the evidence.',
+            output: '',
+            status: 'running',
+          },
+        ],
+      };
+
+      render(<ChatMessageBubble msg={streamingMessage} />);
+
+      expect(screen.getByTestId('reasoning-panel-toggle')).toHaveTextContent(
+        'Thinking...'
+      );
+    });
+
     it('does not render streaming when different message is being streamed', () => {
       mockUseStreamingStore.mockReturnValue({
         isStreaming: true,

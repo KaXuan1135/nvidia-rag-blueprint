@@ -95,7 +95,7 @@ describe('useChatStream — legacy non-agentic path (regression)', () => {
   });
 
   it('captures standard RAG reasoning_content in the reasoning panel model', async () => {
-    const { last } = await drain([
+    const { updates, last } = await drain([
       {
         choices: [
           {
@@ -127,6 +127,14 @@ describe('useChatStream — legacy non-agentic path (regression)', () => {
       },
       { choices: [{ delta: {}, finish_reason: 'stop' }] },
     ]);
+
+    expect(updates[0].reasoning_steps?.[0]?.status).toBe('running');
+    expect(updates[1]).toMatchObject({
+      content: 'The answer is ',
+      reasoning_steps: [
+        expect.objectContaining({ stage: 'rag', status: 'done' }),
+      ],
+    });
 
     expect(last.content).toBe('The answer is 42.');
     expect(last.reasoning_steps).toHaveLength(1);
