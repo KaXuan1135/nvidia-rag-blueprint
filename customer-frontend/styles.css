@@ -147,33 +147,6 @@ h1 {
   overflow-y: auto;
 }
 
-.welcome {
-  max-width: 300px;
-  margin: 72px auto 0;
-  text-align: center;
-}
-
-.eyebrow {
-  margin: 0 0 10px;
-  color: #c07d00;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.welcome h2 {
-  margin: 0;
-  color: #153143;
-  font-size: 24px;
-  line-height: 1.2;
-  letter-spacing: 0;
-}
-
-.welcome p:last-child {
-  margin: 10px 0 0;
-  color: #607383;
-  font-size: 14px;
-}
-
 .message {
   width: 100%;
   margin: 0 0 14px;

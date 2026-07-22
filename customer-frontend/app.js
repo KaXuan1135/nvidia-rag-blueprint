@@ -1,5 +1,4 @@
 const conversation = document.querySelector("#conversation");
-const welcome = document.querySelector("#welcome");
 const composer = document.querySelector("#composer");
 const input = document.querySelector("#message-input");
 const sendButton = document.querySelector("#send-button");
@@ -12,6 +11,8 @@ const closeChatButton = document.querySelector("#close-chat");
 
 let messages = [];
 let busy = false;
+const customerGreeting =
+  "Hi! Welcome to Customer Care. I'm here to help with any questions about our products and services.";
 
 const openChat = () => {
   chatPanel.hidden = false;
@@ -219,7 +220,6 @@ const renderAssistantAnswer = (bubble, content) => {
 };
 
 const addMessage = (role, content = "") => {
-  welcome.hidden = true;
   const row = document.createElement("article");
   row.className = `message ${role}`;
   const bubble = document.createElement("div");
@@ -229,6 +229,10 @@ const addMessage = (role, content = "") => {
   conversation.appendChild(row);
   scrollToLatest();
   return { row, bubble };
+};
+
+const showGreeting = () => {
+  addMessage("assistant", customerGreeting);
 };
 
 const extractSources = (payload) => {
@@ -380,9 +384,11 @@ newChatButton.addEventListener("click", () => {
   if (busy) return;
   messages = [];
   conversation.querySelectorAll(".message").forEach((node) => node.remove());
-  welcome.hidden = false;
+  showGreeting();
   input.focus();
 });
+
+showGreeting();
 
 fetch("/api/health")
   .then((response) => {
