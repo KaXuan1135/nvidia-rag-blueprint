@@ -176,8 +176,7 @@ http
       }
       res.writeHead(200, {
         "Content-Type": contentType,
-        "Cache-Control":
-          fileName === "index.html" ? "no-cache" : "public, max-age=3600",
+        "Cache-Control": "no-store",
         "X-Content-Type-Options": "nosniff",
         "X-Frame-Options": "DENY"
       });
