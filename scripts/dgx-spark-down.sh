@@ -12,5 +12,6 @@ docker_cmd compose \
   -f deploy/dgx-spark/compose.ingestor-arm64.yaml \
   -f deploy/compose/docker-compose-rag-server.yaml \
   -f deploy/dgx-spark/compose.rag-arm64.yaml \
+  -f deploy/dgx-spark/compose.personas.yaml \
   -f deploy/dgx-spark/compose.nims-local.yaml \
   down

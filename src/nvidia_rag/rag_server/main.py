@@ -143,6 +143,11 @@ class NvidiaRAG:
         """
         # Store config
         self.config = config or NvidiaRAGConfig()
+        self.allowed_collections = frozenset(
+            name.strip()
+            for name in os.getenv("RAG_ALLOWED_COLLECTIONS", "").split(",")
+            if name.strip()
+        )
         if (
             self.config.vector_store.name.lower() == "lancedb"
             and self.config.nv_ingest.backend.lower() != "nrl"
@@ -491,6 +496,22 @@ class NvidiaRAG:
                     ErrorCodeMapping.BAD_REQUEST,
                 )
 
+    def _authorize_collections(self, collection_names: list[str]) -> list[str]:
+        """Reject collections outside this server instance's allowlist."""
+        if not self.allowed_collections:
+            return collection_names
+
+        denied = [
+            name for name in collection_names if name not in self.allowed_collections
+        ]
+        if denied:
+            logger.warning("Rejected access to unauthorized collections: %s", denied)
+            raise APIError(
+                "Access to the requested collection is forbidden.",
+                ErrorCodeMapping.FORBIDDEN,
+            )
+        return collection_names
+
     async def generate(
         self,
         messages: list[dict[str, Any]],
@@ -730,6 +751,7 @@ class NvidiaRAG:
             stop = []
         if collection_names is None:
             collection_names = [self.config.vector_store.default_collection_name]
+        collection_names = self._authorize_collections(collection_names)
 
         query, chat_history = prepare_llm_request(messages)
 
@@ -991,6 +1013,7 @@ class NvidiaRAG:
             messages = []
         if collection_names is None:
             collection_names = [self.config.vector_store.default_collection_name]
+        collection_names = self._authorize_collections(collection_names)
 
         # Normalize all model and endpoint values using validation functions
         reranker_model, reranker_endpoint = (
@@ -1612,6 +1635,21 @@ class NvidiaRAG:
             invalid_summary_timeout_response,
             is_invalid_summary_timeout,
         )
+
+        allowed_collections = {
+            name.strip()
+            for name in os.getenv("RAG_ALLOWED_COLLECTIONS", "").split(",")
+            if name.strip()
+        }
+        if allowed_collections and collection_name not in allowed_collections:
+            logger.warning(
+                "Rejected summary access to unauthorized collection: %s",
+                collection_name,
+            )
+            raise APIError(
+                "Access to the requested collection is forbidden.",
+                ErrorCodeMapping.FORBIDDEN,
+            )
 
         if is_invalid_summary_timeout(timeout):
             return invalid_summary_timeout_response(timeout)

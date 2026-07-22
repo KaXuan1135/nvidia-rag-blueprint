@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ffd84d" />
+    <title>Customer Care</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand-mark" aria-hidden="true">C</div>
+        <div class="brand-copy">
+          <h1>Customer Care</h1>
+          <div class="presence">
+            <span id="status-dot" class="status-dot"></span>
+            <span id="status-text">Connecting</span>
+          </div>
+        </div>
+        <button id="new-chat" class="quiet-button" type="button">New chat</button>
+      </header>
+
+      <section id="conversation" class="conversation" aria-live="polite">
+        <div id="welcome" class="welcome">
+          <p class="eyebrow">WELCOME</p>
+          <h2>How can we help today?</h2>
+          <p>Ask us anything about our products and services.</p>
+        </div>
+      </section>
+
+      <form id="composer" class="composer">
+        <label class="sr-only" for="message-input">Message</label>
+        <textarea
+          id="message-input"
+          rows="1"
+          maxlength="4000"
+          placeholder="Type your question"
+          required
+        ></textarea>
+        <button id="send-button" class="send-button" type="submit">Send</button>
+      </form>
+    </main>
+    <script src="/app.js" defer></script>
+  </body>
+</html>

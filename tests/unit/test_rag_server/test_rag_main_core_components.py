@@ -30,7 +30,11 @@ from nvidia_rag.rag_server.reflection import (
     check_context_relevance,
     check_response_groundedness,
 )
-from nvidia_rag.rag_server.response_generator import APIError, RAGResponse
+from nvidia_rag.rag_server.response_generator import (
+    APIError,
+    ErrorCodeMapping,
+    RAGResponse,
+)
 from nvidia_rag.utils.configuration import NvidiaRAGConfig
 from nvidia_rag.utils.health_models import RAGHealthResponse
 from nvidia_rag.utils.vdb.vdb_base import VDBRag
@@ -385,6 +389,44 @@ class TestNvidiaRAGValidateCollections:
 
         # Should not raise any exception for empty list
         rag._validate_collections_exist([], mock_vdb_op)
+
+
+class TestNvidiaRAGCollectionAuthorization:
+    """Test per-instance collection isolation."""
+
+    def test_authorization_is_disabled_without_allowlist(self, monkeypatch):
+        monkeypatch.delenv("RAG_ALLOWED_COLLECTIONS", raising=False)
+        rag = NvidiaRAG()
+
+        assert rag._authorize_collections(["internal", "products"]) == [
+            "internal",
+            "products",
+        ]
+
+    def test_authorized_collection_is_accepted(self, monkeypatch):
+        monkeypatch.setenv("RAG_ALLOWED_COLLECTIONS", "internal, products")
+        rag = NvidiaRAG()
+
+        assert rag._authorize_collections(["products"]) == ["products"]
+
+    def test_unauthorized_collection_is_forbidden(self, monkeypatch):
+        monkeypatch.setenv("RAG_ALLOWED_COLLECTIONS", "products")
+        rag = NvidiaRAG()
+
+        with pytest.raises(APIError) as exc_info:
+            rag._authorize_collections(["internal"])
+
+        assert exc_info.value.status_code == ErrorCodeMapping.FORBIDDEN
+        assert "forbidden" in exc_info.value.message.lower()
+
+    @pytest.mark.asyncio
+    async def test_summary_rejects_unauthorized_collection(self, monkeypatch):
+        monkeypatch.setenv("RAG_ALLOWED_COLLECTIONS", "products")
+
+        with pytest.raises(APIError) as exc_info:
+            await NvidiaRAG.get_summary("internal", "handbook.pdf")
+
+        assert exc_info.value.status_code == ErrorCodeMapping.FORBIDDEN
 
 
 class TestNvidiaRAGExtractTextFromContent:

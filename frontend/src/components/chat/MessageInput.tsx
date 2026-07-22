@@ -55,6 +55,13 @@ export default function MessageInput() {
             </Banner>
           </Block>
         )}
+        {selectedCollections.length === 0 && (
+          <Block paddingY="density-sm">
+            <Banner status="info" kind="inline">
+              Select at least one collection to continue
+            </Banner>
+          </Block>
+        )}
         <MessageInputContainer />
       </>
     </Flex>

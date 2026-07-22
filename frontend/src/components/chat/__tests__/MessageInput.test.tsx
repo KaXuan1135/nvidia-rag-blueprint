@@ -236,7 +236,9 @@ describe('MessageInput', () => {
       render(<MessageInput />);
       
       expect(screen.queryByTestId('filter-bar')).not.toBeInTheDocument();
-      expect(screen.queryByTestId('warning-banner')).not.toBeInTheDocument();
+      expect(screen.getByTestId('warning-banner')).toHaveTextContent(
+        'Select at least one collection to continue'
+      );
     });
 
     it('shows filter bar when single collection is selected', () => {

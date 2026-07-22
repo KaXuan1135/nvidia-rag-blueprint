@@ -169,14 +169,14 @@ export const useMessageSubmit = () => {
         role, 
         content: content as MessageContent 
       })),
-      use_knowledge_base: selectedCollections.length > 0,
+      use_knowledge_base: true,
       temperature: settings.temperature,
       top_p: settings.topP,
       max_tokens: settings.maxTokens,
       reranker_top_k: settings.rerankerTopK,
       vdb_top_k: settings.vdbTopK,
       vdb_endpoint: settings.vdbEndpoint,
-      collection_names: selectedCollections.length > 0 ? selectedCollections : undefined,
+      collection_names: selectedCollections,
       enable_query_rewriting: settings.enableQueryRewriting,
       enable_reranker: settings.enableReranker,
       enable_guardrails: settings.useGuardrails,
@@ -211,7 +211,14 @@ export const useMessageSubmit = () => {
     const hasText = input.trim().length > 0;
     const hasImages = attachedImages.length > 0;
     
-    if ((!hasText && !hasImages) || shouldDisableHealthFeatures || isStreaming) return;
+    if (
+      (!hasText && !hasImages) ||
+      selectedCollections.length === 0 ||
+      shouldDisableHealthFeatures ||
+      isStreaming
+    ) {
+      return;
+    }
 
     // Build multimodal content if images are attached
     // Trim input to remove any trailing whitespace/newlines that would cause blank lines in the chat bubble
@@ -261,11 +268,29 @@ export const useMessageSubmit = () => {
 
     const request = createRequest(currentMessages);
     await sendMessage({ request, assistantId: assistantMessage.id });
-  }, [input, attachedImages, messages, addMessage, setInput, clearAllImages, resetStream, createRequest, sendMessage, generateUUID, shouldDisableHealthFeatures, isStreaming]);
+  }, [
+    input,
+    attachedImages,
+    messages,
+    addMessage,
+    setInput,
+    clearAllImages,
+    resetStream,
+    createRequest,
+    sendMessage,
+    generateUUID,
+    selectedCollections,
+    shouldDisableHealthFeatures,
+    isStreaming,
+  ]);
 
   return {
     handleSubmit,
-    canSubmit: (input.trim().length > 0 || attachedImages.length > 0) && !shouldDisableHealthFeatures && !isStreaming,
+    canSubmit:
+      selectedCollections.length > 0 &&
+      (input.trim().length > 0 || attachedImages.length > 0) &&
+      !shouldDisableHealthFeatures &&
+      !isStreaming,
     isHealthLoading,
     shouldDisableHealthFeatures,
   };

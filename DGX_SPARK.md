@@ -103,6 +103,30 @@ This is content extraction rather than Excel rendering. Cell formatting, charts,
 macros, comments, embedded objects, and formulas without cached values are not
 indexed. Export unusually complex workbooks to PDF when visual structure matters.
 
+## Persona isolation
+
+The DGX Spark profile runs two application personas on one shared local model
+stack:
+
+- The internal NVIDIA Blueprint UI uses the standard prompt and can query any
+  collection. Users must explicitly select at least one collection for each query.
+  It retains collection management and ingestion tools.
+- The customer UI uses `config/customer-service-prompt.yaml` and queries every
+  collection listed in the required `CUSTOMER_COLLECTIONS` setting. It does not
+  expose collection, ingestion, model, or debug controls.
+
+Configure the customer collection allowlist in `.env.dgx-spark` before startup:
+
+```text
+CUSTOMER_COLLECTIONS=product-manuals,product-faq,warranty-policy
+CUSTOMER_FRONTEND_PORT=8091
+```
+
+Customer collection isolation is enforced by the RAG server, not only hidden in
+the UI. The customer proxy injects the configured collections into every request, and a
+request naming anything outside that allowlist returns HTTP 403. Ingestion remains
+available only through the internal Blueprint UI and the ingestion API.
+
 ## Start
 
 After the ARM64 build and NIM image pull succeed, start the complete local stack:
@@ -113,12 +137,15 @@ After the ARM64 build and NIM image pull succeed, start the complete local stack
 
 The services are exposed at:
 
-- Web UI: `http://<dgx-spark-host>:8090`
+- Internal Blueprint UI: `http://<dgx-spark-host>:8090`
+- Customer service UI: `http://<dgx-spark-host>:8091`
+- Customer RAG API (host-local only): `http://127.0.0.1:8083`
 - RAG API: `http://<dgx-spark-host>:8081`
 - Ingestion API: `http://<dgx-spark-host>:8082`
 
-When connecting through VS Code Remote SSH, forward port `8090` in the Ports
-panel and open `http://localhost:8090` locally.
+When connecting through VS Code Remote SSH, forward ports `8090` and `8091` in
+the Ports panel. Open `http://localhost:8090` for the internal UI or
+`http://localhost:8091` for customer service.
 
 Check status and health:
 

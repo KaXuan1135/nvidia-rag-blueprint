@@ -9,6 +9,7 @@ source "${SCRIPT_DIR}/dgx-spark-env.sh"
 RAG_COMPOSE=(
   -f deploy/compose/docker-compose-rag-server.yaml
   -f deploy/dgx-spark/compose.rag-arm64.yaml
+  -f deploy/dgx-spark/compose.personas.yaml
 )
 NIMS_COMPOSE=(
   -f deploy/dgx-spark/compose.nims-local.yaml
@@ -54,10 +55,13 @@ docker_cmd compose "${NIMS_COMPOSE[@]}" up -d \
 docker_cmd compose "${INGEST_COMPOSE[@]}" up -d --no-build
 wait_for_http "Ingestion API" "http://localhost:8082/v1/health?check_dependencies=true"
 
-docker_cmd compose "${RAG_COMPOSE[@]}" up -d --no-build rag-server
-wait_for_http "RAG API" "http://localhost:8081/v1/health?check_dependencies=true"
+docker_cmd compose "${RAG_COMPOSE[@]}" up -d --no-build rag-server rag-server-customer
+wait_for_http "Internal RAG API" "http://localhost:8081/v1/health?check_dependencies=true"
+wait_for_http "Customer RAG API" "http://localhost:8083/v1/health?check_dependencies=true"
 
-docker_cmd compose "${RAG_COMPOSE[@]}" up -d --no-build rag-frontend
+docker_cmd compose "${RAG_COMPOSE[@]}" up -d --no-build rag-frontend customer-frontend
 
-echo "NVIDIA RAG Blueprint is ready. UI: http://localhost:8090"
+echo "NVIDIA RAG Blueprint is ready."
+echo "Internal UI: http://localhost:8090"
+echo "Customer UI: http://localhost:8091"
 echo "Run ./scripts/dgx-spark-status.sh to inspect service state."

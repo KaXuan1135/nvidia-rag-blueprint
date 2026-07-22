@@ -1,0 +1,97 @@
+services:
+  rag-server:
+    environment:
+      # Empty means unrestricted. The internal UI supplies the selected
+      # collections on every knowledge-base request.
+      RAG_ALLOWED_COLLECTIONS: ""
+
+  rag-server-customer:
+    container_name: rag-server-customer
+    image: local/nvidia-rag-server:${TAG:-2.6.0}-arm64
+    platform: linux/arm64
+    pull_policy: never
+    build:
+      context: ../../
+      dockerfile: deploy/dgx-spark/Dockerfile.service-arm64
+      args:
+        SERVICE_EXTRA: rag
+    entrypoint:
+      - uvicorn
+      - nvidia_rag.rag_server.server:app
+    command: --port 8081 --host 0.0.0.0 --workers 2
+    volumes:
+      - ../../config/customer-service-prompt.yaml:/persona/customer-service-prompt.yaml:ro
+      - rag-vol-lancedb:/volumes/lancedb
+    environment:
+      EXAMPLE_PATH: ./nvidia_rag/rag_server
+      PROMPT_CONFIG_FILE: /persona/customer-service-prompt.yaml
+      OBJECTSTORE_ENDPOINT: ${OBJECTSTORE_ENDPOINT:-seaweedfs:9010}
+      OBJECTSTORE_ACCESSKEY: ${OBJECTSTORE_ACCESSKEY:-seaweedfsadmin}
+      OBJECTSTORE_SECRETKEY: ${OBJECTSTORE_SECRETKEY:-seaweedfsadmin}
+      APP_VECTORSTORE_URL: ${APP_VECTORSTORE_URL:-http://elasticsearch:9200}
+      APP_VECTORSTORE_NAME: ${APP_VECTORSTORE_NAME:-elasticsearch}
+      APP_VECTORSTORE_INDEXTYPE: ${APP_VECTORSTORE_INDEXTYPE:-HNSW}
+      APP_VECTORSTORE_SEARCHTYPE: ${APP_VECTORSTORE_SEARCHTYPE:-dense}
+      # The customer proxy always supplies collection_names explicitly. Keep a
+      # harmless technical fallback; it is rejected by the allowlist if used.
+      COLLECTION_NAME: multimodal_data
+      RAG_ALLOWED_COLLECTIONS: ${CUSTOMER_COLLECTIONS:?CUSTOMER_COLLECTIONS is required}
+      VECTOR_DB_TOPK: ${VECTOR_DB_TOPK:-100}
+      APP_RETRIEVER_TOPK: ${APP_RETRIEVER_TOPK:-10}
+      APP_RETRIEVER_SCORETHRESHOLD: ${APP_RETRIEVER_SCORETHRESHOLD:-0.25}
+      APP_LLM_SERVERURL: ${APP_LLM_SERVERURL:-nim-llm:8000}
+      APP_LLM_MODELNAME: ${APP_LLM_MODELNAME:-nvidia/nemotron-3-nano}
+      APP_QUERYREWRITER_SERVERURL: ${APP_QUERYREWRITER_SERVERURL:-nim-llm:8000}
+      APP_QUERYREWRITER_MODELNAME: ${APP_QUERYREWRITER_MODELNAME:-nvidia/nemotron-3-nano}
+      APP_FILTEREXPRESSIONGENERATOR_SERVERURL: ${APP_FILTEREXPRESSIONGENERATOR_SERVERURL:-nim-llm:8000}
+      APP_FILTEREXPRESSIONGENERATOR_MODELNAME: ${APP_FILTEREXPRESSIONGENERATOR_MODELNAME:-nvidia/nemotron-3-nano}
+      APP_EMBEDDINGS_SERVERURL: ${APP_EMBEDDINGS_SERVERURL:-nemotron-vlm-embedding-ms:8000/v1}
+      APP_EMBEDDINGS_MODELNAME: ${APP_EMBEDDINGS_MODELNAME:-nvidia/llama-nemotron-embed-vl-1b-v2}
+      APP_EMBEDDINGS_DIMENSIONS: ${APP_EMBEDDINGS_DIMENSIONS:-2048}
+      APP_RANKING_SERVERURL: ${APP_RANKING_SERVERURL:-nemotron-ranking-ms:8000}
+      APP_RANKING_MODELNAME: ${APP_RANKING_MODELNAME:-nvidia/llama-nemotron-rerank-1b-v2}
+      ENABLE_RERANKER: ${ENABLE_RERANKER:-True}
+      ENABLE_CITATIONS: ${ENABLE_CITATIONS:-True}
+      ENABLE_QUERYREWRITER: ${ENABLE_QUERYREWRITER:-False}
+      CONVERSATION_HISTORY: ${CONVERSATION_HISTORY:-0}
+      ENABLE_AGENTIC_RAG: ${ENABLE_AGENTIC_RAG:-false}
+      LLM_MAX_TOKENS: ${LLM_MAX_TOKENS:-16256}
+      LLM_TEMPERATURE: ${LLM_TEMPERATURE:-0}
+      LLM_TOP_P: ${LLM_TOP_P:-1.0}
+      LLM_ENABLE_THINKING: ${LLM_ENABLE_THINKING:-true}
+      LLM_REASONING_BUDGET: ${LLM_REASONING_BUDGET:-256}
+      LLM_LOW_EFFORT: ${LLM_LOW_EFFORT:-true}
+      FILTER_THINK_TOKENS: ${FILTER_THINK_TOKENS:-true}
+      NVIDIA_API_KEY: local
+      LOGLEVEL: ${LOGLEVEL:-INFO}
+    ports:
+      - "127.0.0.1:8083:8081"
+    expose:
+      - "8081"
+    shm_size: 5gb
+
+  customer-frontend:
+    container_name: customer-frontend
+    image: local/nvidia-rag-customer-frontend:${TAG:-2.6.0}-arm64
+    platform: linux/arm64
+    pull_policy: never
+    build:
+      context: ../../customer-frontend
+      dockerfile: Dockerfile
+    environment:
+      CUSTOMER_RAG_URL: http://rag-server-customer:8081/v1
+      CUSTOMER_COLLECTIONS: ${CUSTOMER_COLLECTIONS:?CUSTOMER_COLLECTIONS is required}
+    ports:
+      - "${CUSTOMER_FRONTEND_PORT:-8091}:3000"
+    expose:
+      - "3000"
+    depends_on:
+      - rag-server-customer
+
+volumes:
+  rag-vol-lancedb:
+    name: rag-vol-lancedb
+
+networks:
+  default:
+    name: nvidia-rag
