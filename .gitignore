@@ -95,3 +95,6 @@ skills-lock.json
 /benchmarks/ingestion/results/
 
 # Workbench Project Layout
+.venv-corpus/
+benchmarks/enterprise-corpus/
+benchmarks/enterprise-corpus-smoke/
