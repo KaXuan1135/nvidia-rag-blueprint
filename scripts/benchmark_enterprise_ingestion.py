@@ -348,7 +348,7 @@ def main() -> int:
     csv_path = result_dir / "format-summary.csv"
     fields = list(report["format_summary"][0]) if report["format_summary"] else []
     with csv_path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fields)
+        writer = csv.DictWriter(handle, fieldnames=fields, lineterminator="\n")
         if fields:
             writer.writeheader()
             writer.writerows(report["format_summary"])
