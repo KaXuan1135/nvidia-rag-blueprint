@@ -1,0 +1,834 @@
+{
+  "run_id": "20260723-111734",
+  "collection_name": "enterprise-corpus-benchmark",
+  "corpus_dir": "/home/ka_xuan/.Workspace/nvidia-rag-dgx-spark-demo/benchmarks/enterprise-corpus",
+  "configuration": {
+    "corpus_dir": "benchmarks/enterprise-corpus",
+    "collection_name": "enterprise-corpus-benchmark",
+    "results_dir": "benchmarks/enterprise-ingestion-results",
+    "ingestor_url": "http://localhost:8082",
+    "formats": [
+      "md",
+      "html",
+      "json",
+      "csv",
+      "xlsx",
+      "docx",
+      "pptx",
+      "pdf",
+      "png",
+      "jpg"
+    ],
+    "sample_per_format": 5,
+    "batch_size": null,
+    "poll_interval": 2,
+    "timeout": 21600,
+    "pause_between_batches": 1,
+    "replace_collection": false,
+    "resume": true,
+    "generate_summary": false
+  },
+  "started_snapshot": {
+    "timestamp": "2026-07-23T11:17:34.340426+00:00",
+    "memory_available_bytes": 85226254336,
+    "swap_free_bytes": 3408510976,
+    "disk_free_bytes": 2753825726464
+  },
+  "batches": [
+    {
+      "extension": ".md",
+      "batch_index": 1,
+      "filenames": [
+        "amg-md-00101.md",
+        "amg-md-00102.md",
+        "amg-md-00103.md",
+        "amg-md-00104.md",
+        "amg-md-00105.md"
+      ],
+      "task_id": "39abb5be-5c0d-4bbd-9142-ac01803fe410",
+      "state": "FINISHED",
+      "outcome": "SUCCEEDED",
+      "failed_documents": [],
+      "attempted_documents": 5,
+      "attempted_bytes": 1273870,
+      "attempted_pages": 5,
+      "successful_documents": 5,
+      "successful_bytes": 1273870,
+      "successful_pages": 5,
+      "submit_seconds": 0.024,
+      "processing_seconds": 78.181,
+      "total_seconds": 78.205,
+      "snapshot_before": {
+        "timestamp": "2026-07-23T11:17:34.340530+00:00",
+        "memory_available_bytes": 85226254336,
+        "swap_free_bytes": 3408510976,
+        "disk_free_bytes": 2753825726464
+      },
+      "snapshot_after": {
+        "timestamp": "2026-07-23T11:18:52.545541+00:00",
+        "memory_available_bytes": 85217144832,
+        "swap_free_bytes": 3408519168,
+        "disk_free_bytes": 2753785147392
+      },
+      "error": null
+    },
+    {
+      "extension": ".html",
+      "batch_index": 1,
+      "filenames": [
+        "amg-html-00001.html",
+        "amg-html-00002.html",
+        "amg-html-00003.html",
+        "amg-html-00004.html",
+        "amg-html-00005.html"
+      ],
+      "task_id": "19711cc4-fdda-4157-a5aa-56a653e40105",
+      "state": "FINISHED",
+      "outcome": "SUCCEEDED",
+      "failed_documents": [],
+      "attempted_documents": 5,
+      "attempted_bytes": 2555347,
+      "attempted_pages": 5,
+      "successful_documents": 5,
+      "successful_bytes": 2555347,
+      "successful_pages": 5,
+      "submit_seconds": 0.02,
+      "processing_seconds": 152.404,
+      "total_seconds": 152.424,
+      "snapshot_before": {
+        "timestamp": "2026-07-23T11:18:53.546074+00:00",
+        "memory_available_bytes": 85199441920,
+        "swap_free_bytes": 3408519168,
+        "disk_free_bytes": 2753787420672
+      },
+      "snapshot_after": {
+        "timestamp": "2026-07-23T11:21:25.969955+00:00",
+        "memory_available_bytes": 84829548544,
+        "swap_free_bytes": 3408584704,
+        "disk_free_bytes": 2753793454080
+      },
+      "error": null
+    },
+    {
+      "extension": ".json",
+      "batch_index": 1,
+      "filenames": [
+        "amg-json-00001.json",
+        "amg-json-00002.json",
+        "amg-json-00003.json",
+        "amg-json-00004.json",
+        "amg-json-00005.json"
+      ],
+      "task_id": "6dbfd29d-b3c5-41ff-be8c-3ba5378ff0ec",
+      "state": "FINISHED",
+      "outcome": "SUCCEEDED",
+      "failed_documents": [],
+      "attempted_documents": 5,
+      "attempted_bytes": 2553642,
+      "attempted_pages": 5,
+      "successful_documents": 5,
+      "successful_bytes": 2553642,
+      "successful_pages": 5,
+      "submit_seconds": 0.025,
+      "processing_seconds": 166.375,
+      "total_seconds": 166.401,
+      "snapshot_before": {
+        "timestamp": "2026-07-23T11:21:26.970711+00:00",
+        "memory_available_bytes": 84804018176,
+        "swap_free_bytes": 3408584704,
+        "disk_free_bytes": 2753804931072
+      },
+      "snapshot_after": {
+        "timestamp": "2026-07-23T11:24:13.371565+00:00",
+        "memory_available_bytes": 84659531776,
+        "swap_free_bytes": 3408646144,
+        "disk_free_bytes": 2753755713536
+      },
+      "error": null
+    },
+    {
+      "extension": ".csv",
+      "batch_index": 1,
+      "filenames": [
+        "amg-csv-00001.csv",
+        "amg-csv-00002.csv",
+        "amg-csv-00003.csv",
+        "amg-csv-00004.csv",
+        "amg-csv-00005.csv"
+      ],
+      "task_id": "f515857b-1471-418a-ac05-e5935b850999",
+      "state": "FINISHED",
+      "outcome": "SUCCEEDED",
+      "failed_documents": [],
+      "attempted_documents": 5,
+      "attempted_bytes": 12784876,
+      "attempted_pages": 5,
+      "successful_documents": 5,
+      "successful_bytes": 12784876,
+      "successful_pages": 5,
+      "submit_seconds": 0.044,
+      "processing_seconds": 965.651,
+      "total_seconds": 965.696,
+      "snapshot_before": {
+        "timestamp": "2026-07-23T11:24:14.372429+00:00",
+        "memory_available_bytes": 84658798592,
+        "swap_free_bytes": 3408646144,
+        "disk_free_bytes": 2753750425600
+      },
+      "snapshot_after": {
+        "timestamp": "2026-07-23T11:40:20.068247+00:00",
+        "memory_available_bytes": 82621530112,
+        "swap_free_bytes": 3415068672,
+        "disk_free_bytes": 2753119129600
+      },
+      "error": null
+    },
+    {
+      "extension": ".xlsx",
+      "batch_index": 1,
+      "filenames": [
+        "amg-xlsx-00001.xlsx",
+        "amg-xlsx-00002.xlsx",
+        "amg-xlsx-00003.xlsx",
+        "amg-xlsx-00004.xlsx",
+        "amg-xlsx-00005.xlsx"
+      ],
+      "task_id": "9eb6dda7-2c18-402f-8416-8d400defaf0f",
+      "state": "FINISHED",
+      "outcome": "SUCCEEDED",
+      "failed_documents": [],
+      "attempted_documents": 5,
+      "attempted_bytes": 6202910,
+      "attempted_pages": 5,
+      "successful_documents": 5,
+      "successful_bytes": 6202910,
+      "successful_pages": 5,
+      "submit_seconds": 0.033,
+      "processing_seconds": 1044.245,
+      "total_seconds": 1044.278,
+      "snapshot_before": {
+        "timestamp": "2026-07-23T11:40:21.068843+00:00",
+        "memory_available_bytes": 82632790016,
+        "swap_free_bytes": 3415068672,
+        "disk_free_bytes": 2753132474368
+      },
+      "snapshot_after": {
+        "timestamp": "2026-07-23T11:57:45.346827+00:00",
+        "memory_available_bytes": 82216542208,
+        "swap_free_bytes": 3416014848,
+        "disk_free_bytes": 2752761159680
+      },
+      "error": null
+    },
+    {
+      "extension": ".docx",
+      "batch_index": 1,
+      "filenames": [
+        "amg-docx-00001.docx",
+        "amg-docx-00002.docx",
+        "amg-docx-00003.docx",
+        "amg-docx-00004.docx",
+        "amg-docx-00005.docx"
+      ],
+      "task_id": "a1719e63-c934-42c3-91b5-0002b118df68",
+      "state": "FINISHED",
+      "outcome": "SUCCEEDED",
+      "failed_documents": [],
+      "attempted_documents": 5,
+      "attempted_bytes": 5901382,
+      "attempted_pages": 5,
+      "successful_documents": 5,
+      "successful_bytes": 5901382,
+      "successful_pages": 5,
+      "submit_seconds": 0.029,
+      "processing_seconds": 64.125,
+      "total_seconds": 64.154,
+      "snapshot_before": {
+        "timestamp": "2026-07-23T11:57:46.348155+00:00",
+        "memory_available_bytes": 82229518336,
+        "swap_free_bytes": 3416014848,
+        "disk_free_bytes": 2752755826688
+      },
+      "snapshot_after": {
+        "timestamp": "2026-07-23T11:58:50.502185+00:00",
+        "memory_available_bytes": 77350686720,
+        "swap_free_bytes": 3495907328,
+        "disk_free_bytes": 2753314672640
+      },
+      "error": null
+    },
+    {
+      "extension": ".pptx",
+      "batch_index": 1,
+      "filenames": [
+        "amg-pptx-00001.pptx",
+        "amg-pptx-00002.pptx",
+        "amg-pptx-00003.pptx",
+        "amg-pptx-00004.pptx",
+        "amg-pptx-00005.pptx"
+      ],
+      "task_id": "64b5bb12-fa97-4d0c-a875-16318ff574a0",
+      "state": "FINISHED",
+      "outcome": "SUCCEEDED",
+      "failed_documents": [],
+      "attempted_documents": 5,
+      "attempted_bytes": 5897637,
+      "attempted_pages": 20,
+      "successful_documents": 5,
+      "successful_bytes": 5897637,
+      "successful_pages": 20,
+      "submit_seconds": 0.035,
+      "processing_seconds": 192.313,
+      "total_seconds": 192.348,
+      "snapshot_before": {
+        "timestamp": "2026-07-23T11:58:51.503121+00:00",
+        "memory_available_bytes": 77359271936,
+        "swap_free_bytes": 3495907328,
+        "disk_free_bytes": 2753314672640
+      },
+      "snapshot_after": {
+        "timestamp": "2026-07-23T12:02:03.851557+00:00",
+        "memory_available_bytes": 73163005952,
+        "swap_free_bytes": 3936374784,
+        "disk_free_bytes": 2753288732672
+      },
+      "error": null
+    },
+    {
+      "extension": ".pdf",
+      "batch_index": 1,
+      "filenames": [
+        "amg-pdf-00001.pdf"
+      ],
+      "task_id": "b8bd52c3-139c-488d-9e78-0c533304debe",
+      "state": "FINISHED",
+      "outcome": "SUCCEEDED",
+      "failed_documents": [],
+      "attempted_documents": 1,
+      "attempted_bytes": 10382,
+      "attempted_pages": 8,
+      "successful_documents": 1,
+      "successful_bytes": 10382,
+      "successful_pages": 8,
+      "submit_seconds": 0.02,
+      "processing_seconds": 6.037,
+      "total_seconds": 6.057,
+      "snapshot_before": {
+        "timestamp": "2026-07-23T12:02:04.852630+00:00",
+        "memory_available_bytes": 73198006272,
+        "swap_free_bytes": 3936374784,
+        "disk_free_bytes": 2753288790016
+      },
+      "snapshot_after": {
+        "timestamp": "2026-07-23T12:02:10.909962+00:00",
+        "memory_available_bytes": 73522331648,
+        "swap_free_bytes": 3936497664,
+        "disk_free_bytes": 2753307566080
+      },
+      "error": null
+    },
+    {
+      "extension": ".pdf",
+      "batch_index": 2,
+      "filenames": [
+        "amg-pdf-00002.pdf"
+      ],
+      "task_id": "971448e8-27b4-4dca-a1e9-7d48e60cd98a",
+      "state": "FINISHED",
+      "outcome": "SUCCEEDED",
+      "failed_documents": [],
+      "attempted_documents": 1,
+      "attempted_bytes": 11479,
+      "attempted_pages": 9,
+      "successful_documents": 1,
+      "successful_bytes": 11479,
+      "successful_pages": 9,
+      "submit_seconds": 0.02,
+      "processing_seconds": 4.058,
+      "total_seconds": 4.079,
+      "snapshot_before": {
+        "timestamp": "2026-07-23T12:02:11.910901+00:00",
+        "memory_available_bytes": 73569976320,
+        "swap_free_bytes": 3936497664,
+        "disk_free_bytes": 2753307561984
+      },
+      "snapshot_after": {
+        "timestamp": "2026-07-23T12:02:15.989624+00:00",
+        "memory_available_bytes": 73816969216,
+        "swap_free_bytes": 3937050624,
+        "disk_free_bytes": 2753303822336
+      },
+      "error": null
+    },
+    {
+      "extension": ".pdf",
+      "batch_index": 3,
+      "filenames": [
+        "amg-pdf-00003.pdf"
+      ],
+      "task_id": "61c8b626-bc92-42df-a1f7-f32b9c2b339d",
+      "state": "FINISHED",
+      "outcome": "SUCCEEDED",
+      "failed_documents": [],
+      "attempted_documents": 1,
+      "attempted_bytes": 8934347,
+      "attempted_pages": 10,
+      "successful_documents": 1,
+      "successful_bytes": 8934347,
+      "successful_pages": 10,
+      "submit_seconds": 0.034,
+      "processing_seconds": 10.043,
+      "total_seconds": 10.076,
+      "snapshot_before": {
+        "timestamp": "2026-07-23T12:02:16.990567+00:00",
+        "memory_available_bytes": 73863081984,
+        "swap_free_bytes": 3937050624,
+        "disk_free_bytes": 2753303822336
+      },
+      "snapshot_after": {
+        "timestamp": "2026-07-23T12:02:27.067103+00:00",
+        "memory_available_bytes": 72838033408,
+        "swap_free_bytes": 3942780928,
+        "disk_free_bytes": 2753304543232
+      },
+      "error": null
+    },
+    {
+      "extension": ".pdf",
+      "batch_index": 4,
+      "filenames": [
+        "amg-pdf-00004.pdf"
+      ],
+      "task_id": "5db112be-7a0a-41b6-bef7-efb70cb93c77",
+      "state": "FINISHED",
+      "outcome": "SUCCEEDED",
+      "failed_documents": [],
+      "attempted_documents": 1,
+      "attempted_bytes": 10646649,
+      "attempted_pages": 11,
+      "successful_documents": 1,
+      "successful_bytes": 10646649,
+      "successful_pages": 11,
+      "submit_seconds": 0.032,
+      "processing_seconds": 10.041,
+      "total_seconds": 10.074,
+      "snapshot_before": {
+        "timestamp": "2026-07-23T12:02:28.068130+00:00",
+        "memory_available_bytes": 72872095744,
+        "swap_free_bytes": 3942780928,
+        "disk_free_bytes": 2753304543232
+      },
+      "snapshot_after": {
+        "timestamp": "2026-07-23T12:02:38.141980+00:00",
+        "memory_available_bytes": 72743141376,
+        "swap_free_bytes": 3944120320,
+        "disk_free_bytes": 2753300160512
+      },
+      "error": null
+    },
+    {
+      "extension": ".pdf",
+      "batch_index": 5,
+      "filenames": [
+        "amg-pdf-00005.pdf"
+      ],
+      "task_id": "907e9aae-077e-4ab9-ba0b-850dc710c0f6",
+      "state": "FINISHED",
+      "outcome": "SUCCEEDED",
+      "failed_documents": [],
+      "attempted_documents": 1,
+      "attempted_bytes": 1546917,
+      "attempted_pages": 12,
+      "successful_documents": 1,
+      "successful_bytes": 1546917,
+      "successful_pages": 12,
+      "submit_seconds": 0.023,
+      "processing_seconds": 8.046,
+      "total_seconds": 8.069,
+      "snapshot_before": {
+        "timestamp": "2026-07-23T12:02:39.143066+00:00",
+        "memory_available_bytes": 72781246464,
+        "swap_free_bytes": 3944120320,
+        "disk_free_bytes": 2753299886080
+      },
+      "snapshot_after": {
+        "timestamp": "2026-07-23T12:02:47.211804+00:00",
+        "memory_available_bytes": 72795754496,
+        "swap_free_bytes": 3944792064,
+        "disk_free_bytes": 2753295257600
+      },
+      "error": null
+    },
+    {
+      "extension": ".png",
+      "batch_index": 1,
+      "filenames": [
+        "amg-png-00001.png",
+        "amg-png-00002.png"
+      ],
+      "task_id": "902c594d-6b5f-4be6-b224-bd4454b20037",
+      "state": "FINISHED",
+      "outcome": "SUCCEEDED",
+      "failed_documents": [],
+      "attempted_documents": 2,
+      "attempted_bytes": 10435355,
+      "attempted_pages": 2,
+      "successful_documents": 2,
+      "successful_bytes": 10435355,
+      "successful_pages": 2,
+      "submit_seconds": 0.041,
+      "processing_seconds": 38.082,
+      "total_seconds": 38.123,
+      "snapshot_before": {
+        "timestamp": "2026-07-23T12:02:48.212695+00:00",
+        "memory_available_bytes": 72817565696,
+        "swap_free_bytes": 3944792064,
+        "disk_free_bytes": 2753295257600
+      },
+      "snapshot_after": {
+        "timestamp": "2026-07-23T12:03:26.335394+00:00",
+        "memory_available_bytes": 72346112000,
+        "swap_free_bytes": 3964420096,
+        "disk_free_bytes": 2753287360512
+      },
+      "error": null
+    },
+    {
+      "extension": ".png",
+      "batch_index": 2,
+      "filenames": [
+        "amg-png-00003.png",
+        "amg-png-00004.png"
+      ],
+      "task_id": "d2665e62-f752-4c51-8eae-0f844129a0db",
+      "state": "FINISHED",
+      "outcome": "SUCCEEDED",
+      "failed_documents": [],
+      "attempted_documents": 2,
+      "attempted_bytes": 10904755,
+      "attempted_pages": 2,
+      "successful_documents": 2,
+      "successful_bytes": 10904755,
+      "successful_pages": 2,
+      "submit_seconds": 0.054,
+      "processing_seconds": 38.101,
+      "total_seconds": 38.155,
+      "snapshot_before": {
+        "timestamp": "2026-07-23T12:03:27.336534+00:00",
+        "memory_available_bytes": 72381087744,
+        "swap_free_bytes": 3964420096,
+        "disk_free_bytes": 2753287323648
+      },
+      "snapshot_after": {
+        "timestamp": "2026-07-23T12:04:05.491584+00:00",
+        "memory_available_bytes": 72122101760,
+        "swap_free_bytes": 3979390976,
+        "disk_free_bytes": 2753280528384
+      },
+      "error": null
+    },
+    {
+      "extension": ".png",
+      "batch_index": 3,
+      "filenames": [
+        "amg-png-00005.png"
+      ],
+      "task_id": "13f6143a-4ebf-4dec-b347-9e10d65bb54b",
+      "state": "FINISHED",
+      "outcome": "SUCCEEDED",
+      "failed_documents": [],
+      "attempted_documents": 1,
+      "attempted_bytes": 5609085,
+      "attempted_pages": 1,
+      "successful_documents": 1,
+      "successful_bytes": 5609085,
+      "successful_pages": 1,
+      "submit_seconds": 0.029,
+      "processing_seconds": 20.064,
+      "total_seconds": 20.094,
+      "snapshot_before": {
+        "timestamp": "2026-07-23T12:04:06.492703+00:00",
+        "memory_available_bytes": 72141312000,
+        "swap_free_bytes": 3979390976,
+        "disk_free_bytes": 2753280528384
+      },
+      "snapshot_after": {
+        "timestamp": "2026-07-23T12:04:26.586368+00:00",
+        "memory_available_bytes": 71855816704,
+        "swap_free_bytes": 3986632704,
+        "disk_free_bytes": 2753273110528
+      },
+      "error": null
+    },
+    {
+      "extension": ".jpg",
+      "batch_index": 1,
+      "filenames": [
+        "amg-jpeg-00001.jpg",
+        "amg-jpeg-00002.jpg"
+      ],
+      "task_id": "b2edd428-ece1-4ec8-813c-c7a02262c7ed",
+      "state": "FINISHED",
+      "outcome": "SUCCEEDED",
+      "failed_documents": [],
+      "attempted_documents": 2,
+      "attempted_bytes": 2345102,
+      "attempted_pages": 2,
+      "successful_documents": 2,
+      "successful_bytes": 2345102,
+      "successful_pages": 2,
+      "submit_seconds": 0.017,
+      "processing_seconds": 24.097,
+      "total_seconds": 24.114,
+      "snapshot_before": {
+        "timestamp": "2026-07-23T12:04:27.587153+00:00",
+        "memory_available_bytes": 71875641344,
+        "swap_free_bytes": 3986632704,
+        "disk_free_bytes": 2753273106432
+      },
+      "snapshot_after": {
+        "timestamp": "2026-07-23T12:04:51.701187+00:00",
+        "memory_available_bytes": 72243875840,
+        "swap_free_bytes": 3986984960,
+        "disk_free_bytes": 2753270206464
+      },
+      "error": null
+    },
+    {
+      "extension": ".jpg",
+      "batch_index": 2,
+      "filenames": [
+        "amg-jpeg-00003.jpg",
+        "amg-jpeg-00004.jpg"
+      ],
+      "task_id": "d368d1aa-fc17-446c-9f57-51c83e9662e1",
+      "state": "FINISHED",
+      "outcome": "SUCCEEDED",
+      "failed_documents": [],
+      "attempted_documents": 2,
+      "attempted_bytes": 2270793,
+      "attempted_pages": 2,
+      "successful_documents": 2,
+      "successful_bytes": 2270793,
+      "successful_pages": 2,
+      "submit_seconds": 0.027,
+      "processing_seconds": 28.077,
+      "total_seconds": 28.104,
+      "snapshot_before": {
+        "timestamp": "2026-07-23T12:04:52.702363+00:00",
+        "memory_available_bytes": 72253095936,
+        "swap_free_bytes": 3986984960,
+        "disk_free_bytes": 2753270202368
+      },
+      "snapshot_after": {
+        "timestamp": "2026-07-23T12:05:20.806447+00:00",
+        "memory_available_bytes": 72244375552,
+        "swap_free_bytes": 4004085760,
+        "disk_free_bytes": 2753263591424
+      },
+      "error": null
+    },
+    {
+      "extension": ".jpg",
+      "batch_index": 3,
+      "filenames": [
+        "amg-jpeg-00005.jpg"
+      ],
+      "task_id": "ed588f03-0e18-4d78-baba-c4de63432182",
+      "state": "FINISHED",
+      "outcome": "SUCCEEDED",
+      "failed_documents": [],
+      "attempted_documents": 1,
+      "attempted_bytes": 1225401,
+      "attempted_pages": 1,
+      "successful_documents": 1,
+      "successful_bytes": 1225401,
+      "successful_pages": 1,
+      "submit_seconds": 0.015,
+      "processing_seconds": 14.047,
+      "total_seconds": 14.062,
+      "snapshot_before": {
+        "timestamp": "2026-07-23T12:05:21.807246+00:00",
+        "memory_available_bytes": 72260694016,
+        "swap_free_bytes": 4004085760,
+        "disk_free_bytes": 2753263591424
+      },
+      "snapshot_after": {
+        "timestamp": "2026-07-23T12:05:35.869281+00:00",
+        "memory_available_bytes": 72220106752,
+        "swap_free_bytes": 4004519936,
+        "disk_free_bytes": 2753259356160
+      },
+      "error": null
+    }
+  ],
+  "format_summary": [
+    {
+      "extension": ".md",
+      "batches": 1,
+      "successful_batches": 1,
+      "failed_batches": 0,
+      "documents_ingested": 5,
+      "megabytes_ingested": 1.274,
+      "mebibytes_ingested": 1.215,
+      "page_equivalents_ingested": 5,
+      "total_seconds": 78.205,
+      "mb_per_minute": 0.977,
+      "mib_per_minute": 0.932,
+      "pages_per_minute": 3.836,
+      "documents_per_minute": 3.836,
+      "median_batch_seconds": 78.205
+    },
+    {
+      "extension": ".html",
+      "batches": 1,
+      "successful_batches": 1,
+      "failed_batches": 0,
+      "documents_ingested": 5,
+      "megabytes_ingested": 2.555,
+      "mebibytes_ingested": 2.437,
+      "page_equivalents_ingested": 5,
+      "total_seconds": 152.424,
+      "mb_per_minute": 1.006,
+      "mib_per_minute": 0.959,
+      "pages_per_minute": 1.968,
+      "documents_per_minute": 1.968,
+      "median_batch_seconds": 152.424
+    },
+    {
+      "extension": ".json",
+      "batches": 1,
+      "successful_batches": 1,
+      "failed_batches": 0,
+      "documents_ingested": 5,
+      "megabytes_ingested": 2.554,
+      "mebibytes_ingested": 2.435,
+      "page_equivalents_ingested": 5,
+      "total_seconds": 166.401,
+      "mb_per_minute": 0.921,
+      "mib_per_minute": 0.878,
+      "pages_per_minute": 1.803,
+      "documents_per_minute": 1.803,
+      "median_batch_seconds": 166.401
+    },
+    {
+      "extension": ".csv",
+      "batches": 1,
+      "successful_batches": 1,
+      "failed_batches": 0,
+      "documents_ingested": 5,
+      "megabytes_ingested": 12.785,
+      "mebibytes_ingested": 12.193,
+      "page_equivalents_ingested": 5,
+      "total_seconds": 965.696,
+      "mb_per_minute": 0.794,
+      "mib_per_minute": 0.758,
+      "pages_per_minute": 0.311,
+      "documents_per_minute": 0.311,
+      "median_batch_seconds": 965.696
+    },
+    {
+      "extension": ".xlsx",
+      "batches": 1,
+      "successful_batches": 1,
+      "failed_batches": 0,
+      "documents_ingested": 5,
+      "megabytes_ingested": 6.203,
+      "mebibytes_ingested": 5.916,
+      "page_equivalents_ingested": 5,
+      "total_seconds": 1044.278,
+      "mb_per_minute": 0.356,
+      "mib_per_minute": 0.34,
+      "pages_per_minute": 0.287,
+      "documents_per_minute": 0.287,
+      "median_batch_seconds": 1044.278
+    },
+    {
+      "extension": ".docx",
+      "batches": 1,
+      "successful_batches": 1,
+      "failed_batches": 0,
+      "documents_ingested": 5,
+      "megabytes_ingested": 5.901,
+      "mebibytes_ingested": 5.628,
+      "page_equivalents_ingested": 5,
+      "total_seconds": 64.154,
+      "mb_per_minute": 5.519,
+      "mib_per_minute": 5.264,
+      "pages_per_minute": 4.676,
+      "documents_per_minute": 4.676,
+      "median_batch_seconds": 64.154
+    },
+    {
+      "extension": ".pptx",
+      "batches": 1,
+      "successful_batches": 1,
+      "failed_batches": 0,
+      "documents_ingested": 5,
+      "megabytes_ingested": 5.898,
+      "mebibytes_ingested": 5.624,
+      "page_equivalents_ingested": 20,
+      "total_seconds": 192.348,
+      "mb_per_minute": 1.84,
+      "mib_per_minute": 1.754,
+      "pages_per_minute": 6.239,
+      "documents_per_minute": 1.56,
+      "median_batch_seconds": 192.348
+    },
+    {
+      "extension": ".pdf",
+      "batches": 5,
+      "successful_batches": 5,
+      "failed_batches": 0,
+      "documents_ingested": 5,
+      "megabytes_ingested": 21.15,
+      "mebibytes_ingested": 20.17,
+      "page_equivalents_ingested": 50,
+      "total_seconds": 38.355,
+      "mb_per_minute": 33.085,
+      "mib_per_minute": 31.553,
+      "pages_per_minute": 78.217,
+      "documents_per_minute": 7.822,
+      "median_batch_seconds": 8.069
+    },
+    {
+      "extension": ".png",
+      "batches": 3,
+      "successful_batches": 3,
+      "failed_batches": 0,
+      "documents_ingested": 5,
+      "megabytes_ingested": 26.949,
+      "mebibytes_ingested": 25.701,
+      "page_equivalents_ingested": 5,
+      "total_seconds": 96.372,
+      "mb_per_minute": 16.778,
+      "mib_per_minute": 16.001,
+      "pages_per_minute": 3.113,
+      "documents_per_minute": 3.113,
+      "median_batch_seconds": 38.123
+    },
+    {
+      "extension": ".jpg",
+      "batches": 3,
+      "successful_batches": 3,
+      "failed_batches": 0,
+      "documents_ingested": 5,
+      "megabytes_ingested": 5.841,
+      "mebibytes_ingested": 5.571,
+      "page_equivalents_ingested": 5,
+      "total_seconds": 66.28,
+      "mb_per_minute": 5.288,
+      "mib_per_minute": 5.043,
+      "pages_per_minute": 4.526,
+      "documents_per_minute": 4.526,
+      "median_batch_seconds": 24.114
+    }
+  ],
+  "elapsed_seconds": 2882.53,
+  "finished_snapshot": {
+    "timestamp": "2026-07-23T12:05:36.870469+00:00",
+    "memory_available_bytes": 72236019712,
+    "swap_free_bytes": 4004519936,
+    "disk_free_bytes": 2753259352064
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "folder": "/home/ka_xuan/.Workspace/nvidia-rag-dgx-spark-demo/benchmarks/enterprise-corpus/documents",
+  "benchmark_report": "/home/ka_xuan/.Workspace/nvidia-rag-dgx-spark-demo/benchmarks/enterprise-ingestion-results/20260723-consolidated/report.json",
+  "formats": [
+    {
+      "extension": ".csv",
+      "files": 60,
+      "megabytes": 153.42,
+      "pages": 60,
+      "benchmark_mb_per_minute": 0.794,
+      "benchmark_pages_per_minute": 0.311,
+      "estimated_minutes_by_size": 193.224,
+      "estimated_minutes_by_pages": 192.926
+    },
+    {
+      "extension": ".docx",
+      "files": 100,
+      "megabytes": 118.252,
+      "pages": 100,
+      "benchmark_mb_per_minute": 5.519,
+      "benchmark_pages_per_minute": 4.676,
+      "estimated_minutes_by_size": 21.426,
+      "estimated_minutes_by_pages": 21.386
+    },
+    {
+      "extension": ".html",
+      "files": 100,
+      "megabytes": 51.078,
+      "pages": 100,
+      "benchmark_mb_per_minute": 1.006,
+      "benchmark_pages_per_minute": 1.968,
+      "estimated_minutes_by_size": 50.774,
+      "estimated_minutes_by_pages": 50.813
+    },
+    {
+      "extension": ".jpg",
+      "files": 200,
+      "megabytes": 232.8,
+      "pages": 200,
+      "benchmark_mb_per_minute": 5.288,
+      "benchmark_pages_per_minute": 4.526,
+      "estimated_minutes_by_size": 44.024,
+      "estimated_minutes_by_pages": 44.189
+    },
+    {
+      "extension": ".json",
+      "files": 100,
+      "megabytes": 51.063,
+      "pages": 100,
+      "benchmark_mb_per_minute": 0.921,
+      "benchmark_pages_per_minute": 1.803,
+      "estimated_minutes_by_size": 55.443,
+      "estimated_minutes_by_pages": 55.463
+    },
+    {
+      "extension": ".md",
+      "files": 200,
+      "megabytes": 51.021,
+      "pages": 200,
+      "benchmark_mb_per_minute": 0.977,
+      "benchmark_pages_per_minute": 3.836,
+      "estimated_minutes_by_size": 52.222,
+      "estimated_minutes_by_pages": 52.138
+    },
+    {
+      "extension": ".pdf",
+      "files": 300,
+      "megabytes": 1275.224,
+      "pages": 3150,
+      "benchmark_mb_per_minute": 33.085,
+      "benchmark_pages_per_minute": 78.217,
+      "estimated_minutes_by_size": 38.544,
+      "estimated_minutes_by_pages": 40.273
+    },
+    {
+      "extension": ".png",
+      "files": 150,
+      "megabytes": 821.204,
+      "pages": 150,
+      "benchmark_mb_per_minute": 16.778,
+      "benchmark_pages_per_minute": 3.113,
+      "estimated_minutes_by_size": 48.945,
+      "estimated_minutes_by_pages": 48.185
+    },
+    {
+      "extension": ".pptx",
+      "files": 60,
+      "megabytes": 70.326,
+      "pages": 240,
+      "benchmark_mb_per_minute": 1.84,
+      "benchmark_pages_per_minute": 6.239,
+      "estimated_minutes_by_size": 38.22,
+      "estimated_minutes_by_pages": 38.468
+    },
+    {
+      "extension": ".txt",
+      "files": 200,
+      "megabytes": 51.015,
+      "pages": 200,
+      "benchmark_mb_per_minute": 0.877,
+      "benchmark_pages_per_minute": 3.437,
+      "estimated_minutes_by_size": 58.17,
+      "estimated_minutes_by_pages": 58.19
+    },
+    {
+      "extension": ".xlsx",
+      "files": 60,
+      "megabytes": 74.137,
+      "pages": 60,
+      "benchmark_mb_per_minute": 0.356,
+      "benchmark_pages_per_minute": 0.287,
+      "estimated_minutes_by_size": 208.25,
+      "estimated_minutes_by_pages": 209.059
+    }
+  ],
+  "estimated_minutes": 809.243,
+  "estimated_range_minutes": {
+    "optimistic": 606.932,
+    "conservative": 1213.864
+  },
+  "unsupported_files": [],
+  "notes": [
+    "The total assumes formats are ingested sequentially with the benchmark configuration.",
+    "PDF page count is approximate unless --manifest is supplied.",
+    "OCR quality, tables, charts, model warm-up, and batch size can materially change latency."
+  ]
+}

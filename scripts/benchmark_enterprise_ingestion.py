@@ -36,8 +36,8 @@ FORMAT_ORDER = [
     ".docx", ".pptx", ".pdf", ".png", ".jpg", ".jpeg",
 ]
 DEFAULT_BATCH_SIZES = {
-    ".txt": 10, ".md": 10, ".html": 10, ".json": 10, ".csv": 4,
-    ".xlsx": 2, ".docx": 2, ".pptx": 2, ".pdf": 1,
+    ".txt": 100, ".md": 100, ".html": 50, ".json": 50, ".csv": 10,
+    ".xlsx": 5, ".docx": 5, ".pptx": 5, ".pdf": 1,
     ".png": 2, ".jpg": 2, ".jpeg": 2,
 }
 
@@ -49,6 +49,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--results-dir", default="benchmarks/enterprise-ingestion-results")
     parser.add_argument("--ingestor-url", default="http://localhost:8082")
     parser.add_argument("--formats", nargs="*", help="Extensions to ingest, such as pdf png txt")
+    parser.add_argument(
+        "--sample-per-format",
+        type=int,
+        help="Only ingest the first N remaining files of each format",
+    )
     parser.add_argument("--batch-size", type=int, help="Override all per-format batch sizes")
     parser.add_argument("--poll-interval", type=float, default=2)
     parser.add_argument("--timeout", type=int, default=21600)
@@ -209,6 +214,8 @@ def main() -> int:
     options = parse_args()
     if options.batch_size is not None and options.batch_size < 1:
         raise SystemExit("--batch-size must be at least 1")
+    if options.sample_per_format is not None and options.sample_per_format < 1:
+        raise SystemExit("--sample-per-format must be at least 1")
     repo = Path(__file__).resolve().parents[1]
     corpus = (repo / options.corpus_dir).resolve()
     records = [
@@ -264,6 +271,8 @@ def main() -> int:
             item for item in grouped.get(extension, [])
             if item["filename"] not in existing_documents
         ]
+        if options.sample_per_format is not None:
+            items = items[: options.sample_per_format]
         if not items:
             continue
         batch_size = options.batch_size or DEFAULT_BATCH_SIZES[extension]
