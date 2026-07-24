@@ -6,24 +6,22 @@
 
 The [NVIDIA RAG Blueprint](readme.md) supports multi-turn conversations through two configuration options:
 
-1. **CONVERSATION_HISTORY**: Controls how many conversation turns are passed to the LLM for response generation
-2. **Query Processing**: Either query rewriting (`ENABLE_QUERYREWRITER`) or simple retrieval (`MULTITURN_RETRIEVER_SIMPLE`)
+1. **CONVERSATION_HISTORY**: Controls how many conversation turns are used for retrieval and response generation
+2. **ENABLE_QUERYREWRITER**: Optionally rewrites follow-up questions into standalone retrieval queries
 
 :::{important}
 **For multi-turn conversations to work, you must set `CONVERSATION_HISTORY > 0` (e.g., 3-5 conversation turns).**
 
-Additionally, enable either:
-- `ENABLE_QUERYREWRITER=True` (recommended for best accuracy), OR
-- `MULTITURN_RETRIEVER_SIMPLE=True` (for lower latency)
+Set `ENABLE_QUERYREWRITER=True` when higher retrieval accuracy is worth an additional LLM call. When query rewriting is disabled, retrieval automatically concatenates the last N user queries, where N is `CONVERSATION_HISTORY`.
 
-Without these settings, each query is processed independently without conversational context.
+With `CONVERSATION_HISTORY=0`, each query is processed independently without conversational context.
 :::
 
 ## How Multi-Turn Conversations Work
 
 ### Generation Stage (CONVERSATION_HISTORY)
 
-`CONVERSATION_HISTORY` determines the number of conversation turns (user-assistant pairs) passed to the LLM when generating responses. This provides the LLM with context from previous exchanges.
+`CONVERSATION_HISTORY` determines the number of conversation turns used by the pipeline. Retrieval uses the last N user queries. Response generation uses the last N complete user-assistant pairs. This avoids sending assistant answers to the embedding model while preserving complete conversational context for generation.
 
 **Default:** `0` (no conversation history)
 
@@ -36,7 +34,7 @@ This passes the last 2 conversation turns (4 messages: 2 user + 2 assistant) to 
 
 ### Retrieval Stage
 
-The retrieval stage supports two approaches:
+The retrieval stage supports two approaches. Both are controlled by `CONVERSATION_HISTORY`.
 
 #### Option 1: Query Rewriting (ENABLE_QUERYREWRITER)
 
@@ -54,11 +52,9 @@ Query rewriting makes an additional LLM call to decontextualize the incoming que
 If you enable query rewriting (`ENABLE_QUERYREWRITER=True`) but keep `CONVERSATION_HISTORY=0`, query rewriting will be skipped with a warning.
 :::
 
-#### Option 2: Simple History Concatenation (MULTITURN_RETRIEVER_SIMPLE)
+#### Option 2: Automatic Simple History Concatenation
 
-When `MULTITURN_RETRIEVER_SIMPLE` is enabled, previous user queries from the conversation are concatenated with the current query before retrieving documents from the vector database.
-
-**Default:** `False` (disabled)
+When query rewriting is disabled, previous user queries from the conversation are automatically concatenated with the current query before retrieving documents from the vector database.
 
 **Example:**
 ```
@@ -66,17 +62,15 @@ User Turn 1: "What is NVIDIA?"
 User Turn 2: "Tell me about their GPUs"
 ```
 
-- **When disabled (False)**: Only "Tell me about their GPUs" is used for retrieval
-- **When enabled (True)**: "What is NVIDIA?. Tell me about their GPUs" is used for retrieval
+- **With `CONVERSATION_HISTORY=0`**: Only "Tell me about their GPUs" is used for retrieval
+- **With `CONVERSATION_HISTORY>0`**: "What is NVIDIA?. Tell me about their GPUs" is used for retrieval
 
 **How it works:**
 - Concatenates previous user queries with the current query using ". " separator
 - Lower latency (no additional LLM call)
 - May be less accurate than query rewriting for complex conversational references
 
-:::{note}
-`MULTITURN_RETRIEVER_SIMPLE` only applies when query rewriting is disabled. If `ENABLE_QUERYREWRITER` is `True`, query rewriting takes precedence.
-:::
+If `ENABLE_QUERYREWRITER` is `True`, query rewriting takes precedence over automatic concatenation.
 
 ## API Usage
 
@@ -140,8 +134,8 @@ CONVERSATION_HISTORY="5"
 
 **Configuration:**
 ```bash
-MULTITURN_RETRIEVER_SIMPLE="True"
 CONVERSATION_HISTORY="5"
+ENABLE_QUERYREWRITER="False"
 ```
 
 **When to use:**
@@ -187,6 +181,7 @@ Follow the deployment guide for [Self-Hosted Models](deploy-docker-self-hosted.m
    export APP_QUERYREWRITER_SERVERURL="nim-llm:8000"
    export ENABLE_QUERYREWRITER="True"
    export CONVERSATION_HISTORY="5"
+export ENABLE_QUERYREWRITER="False"
    docker compose -f deploy/compose/docker-compose-rag-server.yaml up -d
    ```
 
@@ -201,6 +196,7 @@ You can enable query rewriting at runtime by setting `enable_query_rewriting: Tr
    export APP_QUERYREWRITER_SERVERURL=""
    export ENABLE_QUERYREWRITER="True"
    export CONVERSATION_HISTORY="5"
+export ENABLE_QUERYREWRITER="False"
    docker compose -f deploy/compose/docker-compose-rag-server.yaml up -d
    ```
 
@@ -215,8 +211,8 @@ export APP_QUERYREWRITER_MODELNAME="<model_name>"
 ### Enable Simple History Concatenation
 
 ```bash
-export MULTITURN_RETRIEVER_SIMPLE="True"
 export CONVERSATION_HISTORY="5"
+export ENABLE_QUERYREWRITER="False"
 docker compose -f deploy/compose/docker-compose-rag-server.yaml up -d
 ```
 
@@ -224,7 +220,6 @@ docker compose -f deploy/compose/docker-compose-rag-server.yaml up -d
 
 ```bash
 export CONVERSATION_HISTORY="0"
-export MULTITURN_RETRIEVER_SIMPLE="False"
 export ENABLE_QUERYREWRITER="False"
 docker compose -f deploy/compose/docker-compose-rag-server.yaml up -d
 ```
@@ -268,9 +263,9 @@ Only on-prem deployment of the LLM is supported for Helm. The model must be depl
    envVars:
      # ... existing configurations ...
      
-     # === Simple Multi-Turn (History Concatenation) ===
-     MULTITURN_RETRIEVER_SIMPLE: "True"
+     # === Simple Multi-Turn (Automatic History Concatenation) ===
      CONVERSATION_HISTORY: "5"
+     ENABLE_QUERYREWRITER: "False"
    ```
 
 2. Upgrade the deployment:
@@ -283,9 +278,8 @@ Only on-prem deployment of the LLM is supported for Helm. The model must be depl
 
 | Environment Variable | Stage | Default | Required For | Description |
 |---------------------|-------|---------|--------------|-------------|
-| `CONVERSATION_HISTORY` | Generation | `0` | All multi-turn features | Number of conversation turns to pass to LLM (0 = no history) |
+| `CONVERSATION_HISTORY` | Retrieval and generation | `0` | All multi-turn features | Number of user queries used for retrieval and complete user-assistant pairs passed to the LLM (0 = no history) |
 | `ENABLE_QUERYREWRITER` | Retrieval | `False` | Advanced multi-turn | Enable AI-powered query rewriting for better retrieval accuracy |
-| `MULTITURN_RETRIEVER_SIMPLE` | Retrieval | `False` | Simple multi-turn | Concatenate conversation history with current query for document retrieval |
 | `APP_QUERYREWRITER_SERVERURL` | Retrieval | - | Query rewriting | Server URL for query rewriter model (empty string for cloud-hosted) |
 | `APP_QUERYREWRITER_MODELNAME` | Retrieval | - | Query rewriting | Model name for query rewriter |
 

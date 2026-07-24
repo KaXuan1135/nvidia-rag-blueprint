@@ -167,9 +167,6 @@ services:
       # This will improve accuracy of the retrieiver pipeline but increase latency due to an additional LLM call
       ENABLE_QUERYREWRITER: ${ENABLE_QUERYREWRITER:-False}
 
-      # enable concatenating conversation history with current query for retrieval (when query rewriter is disabled)
-      MULTITURN_RETRIEVER_SIMPLE: ${MULTITURN_RETRIEVER_SIMPLE:-False}
-
       # Choose whether to enable citations in the response
       ENABLE_CITATIONS: ${ENABLE_CITATIONS:-True}
 

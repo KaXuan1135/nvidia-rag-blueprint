@@ -34,7 +34,7 @@ Use these features when the user wants follow-up questions, conversation-aware r
 
 ### Multi-Turn
 1. Read `docs/multiturn.md` for retrieval strategies and API usage.
-2. To enable, set `CONVERSATION_HISTORY > 0` and choose the retrieval strategy.
+2. To enable, set `CONVERSATION_HISTORY > 0`. User-query history is concatenated automatically unless query rewriting is enabled.
 3. To disable, set `CONVERSATION_HISTORY=0`.
 
 ### Query Decomposition
@@ -46,13 +46,13 @@ Use these features when the user wants follow-up questions, conversation-aware r
 | Goal | Source Doc | Key Settings |
 |------|------------|--------------|
 | Multi-turn with best accuracy | `docs/multiturn.md` | `CONVERSATION_HISTORY=5`, `ENABLE_QUERYREWRITER=True` |
-| Multi-turn with low latency | `docs/multiturn.md` | `CONVERSATION_HISTORY=5`, `MULTITURN_RETRIEVER_SIMPLE=True` |
+| Multi-turn with low latency | `docs/multiturn.md` | `CONVERSATION_HISTORY=5`, `ENABLE_QUERYREWRITER=False` |
 | Complex multi-hop decomposition | `docs/query_decomposition.md` | `ENABLE_QUERY_DECOMPOSITION=true`, `MAX_RECURSION_DEPTH=3` |
 | Agent planning/execution | `docs/agentic-rag.md` | Use `references/configure/agentic-rag.md` |
 | Disable multi-turn | — | `CONVERSATION_HISTORY=0` |
 
 ## Agent-Specific Notes
-- `MULTITURN_RETRIEVER_SIMPLE` only applies when query rewriting is disabled; query rewriting takes precedence if both are configured.
+- Query rewriting takes precedence over automatic user-query history concatenation when enabled.
 - Query decomposition adds latency and is most useful for multi-hop questions that involve multiple entities or steps.
 - In library mode, configure these settings in `notebooks/config.yaml` instead of environment variables.
 
