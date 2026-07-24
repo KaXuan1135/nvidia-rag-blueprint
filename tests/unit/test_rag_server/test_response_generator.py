@@ -47,6 +47,7 @@ from nvidia_rag.rag_server.response_generator import (
     generate_answer_async,
     prepare_citations,
     prepare_llm_request,
+    project_conversation_history,
     retrieve_summary,
 )
 
@@ -350,11 +351,76 @@ class TestPrepareLLMRequest:
         assert last_user_message == "Hello"
         assert processed_chat_history == []
 
+    def test_preserves_final_answers_and_drops_reasoning_metadata(self):
+        messages = [
+            {"role": "user", "content": "Question one"},
+            {
+                "role": "assistant",
+                "content": "Final answer one",
+                "reasoning_content": "Private reasoning",
+                "citations": ["document.pdf"],
+            },
+            {"role": "user", "content": "Follow-up"},
+        ]
+
+        query, history = prepare_llm_request(messages)
+
+        assert query == "Follow-up"
+        assert history == [
+            {"role": "user", "content": "Question one"},
+            {"role": "assistant", "content": "Final answer one"},
+        ]
+
+    def test_drops_empty_assistant_placeholder(self):
+        messages = [
+            {"role": "user", "content": "Question one"},
+            {"role": "assistant", "content": ""},
+            {"role": "user", "content": "Follow-up"},
+        ]
+
+        query, history = prepare_llm_request(messages)
+
+        assert query == "Follow-up"
+        assert history == [{"role": "user", "content": "Question one"}]
+
     def test_prepare_llm_request_empty_messages(self):
         """Test prepare_llm_request with empty messages"""
         last_user_message, processed_chat_history = prepare_llm_request([])
         assert last_user_message is None
         assert processed_chat_history == []
+
+
+class TestProjectConversationHistory:
+    def test_uses_user_queries_for_retrieval_and_complete_turns_for_generation(self):
+        history = [
+            {"role": "system", "content": "System override"},
+            {"role": "user", "content": "Question one"},
+            {"role": "assistant", "content": "Answer one"},
+            {"role": "user", "content": "Question two"},
+            {"role": "assistant", "content": "Answer two"},
+            {"role": "user", "content": "Unanswered question"},
+        ]
+
+        retrieval, generation = project_conversation_history(history, 2)
+
+        assert retrieval == [
+            {"role": "user", "content": "Question two"},
+            {"role": "user", "content": "Unanswered question"},
+        ]
+        assert generation == [
+            {"role": "user", "content": "Question one"},
+            {"role": "assistant", "content": "Answer one"},
+            {"role": "user", "content": "Question two"},
+            {"role": "assistant", "content": "Answer two"},
+        ]
+
+    def test_zero_turns_disables_both_histories(self):
+        history = [
+            {"role": "user", "content": "Question"},
+            {"role": "assistant", "content": "Answer"},
+        ]
+
+        assert project_conversation_history(history, 0) == ([], [])
 
 
 class TestPrepareCitations:

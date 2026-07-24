@@ -208,8 +208,9 @@ async def test_search_skips_query_rewriter_when_history_is_zero(monkeypatch, cap
 
 @pytest.mark.asyncio
 async def test_search_uses_only_current_query_when_history_disabled(monkeypatch):
-    """Test that when multiturn_retrieval_simple is False (default), only current query is used."""
+    """CONVERSATION_HISTORY=0 uses only the current query."""
     from nvidia_rag.rag_server.main import NvidiaRAG
+    monkeypatch.setenv("CONVERSATION_HISTORY", "0")
 
     fake_vdb = DummyVDB()
     rag = NvidiaRAG()
@@ -220,7 +221,7 @@ async def test_search_uses_only_current_query_when_history_disabled(monkeypatch)
         {"role": "assistant", "content": "A retrieval-augmented framework."},
     ]
 
-    # Act: multiturn_retrieval_simple defaults to False
+    # Act: conversation history is disabled.
     await rag.search(
         query="How does it work?",
         messages=messages,
@@ -236,11 +237,10 @@ async def test_search_uses_only_current_query_when_history_disabled(monkeypatch)
 
 @pytest.mark.asyncio
 async def test_search_combines_history_when_multiturn_enabled(monkeypatch):
-    """Test that when multiturn_retrieval_simple is True, history is concatenated."""
+    """CONVERSATION_HISTORY combines prior user queries during search retrieval."""
     from nvidia_rag.rag_server.main import NvidiaRAG
 
-    # Enable multiturn retrieval via environment variable BEFORE creating NvidiaRAG instance
-    monkeypatch.setenv("MULTITURN_RETRIEVER_SIMPLE", "True")
+    monkeypatch.setenv("CONVERSATION_HISTORY", "1")
     
     fake_vdb = DummyVDB()
     rag = NvidiaRAG()
@@ -339,12 +339,11 @@ async def test_generate_uses_query_rewriter_when_enabled(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_generate_uses_only_current_query_when_history_disabled(monkeypatch):
-    """Test that when multiturn_retrieval_simple is False (default), only current query is used."""
+    """CONVERSATION_HISTORY=0 uses only the current query."""
     from nvidia_rag.rag_server.main import NvidiaRAG
 
     fake_vdb = DummyVDB()
-    # Explicitly ensure multiturn simple retrieval is disabled
-    monkeypatch.setenv("MULTITURN_RETRIEVER_SIMPLE", "False")
+    monkeypatch.setenv("CONVERSATION_HISTORY", "0")
     rag = NvidiaRAG()
     monkeypatch.setattr(NvidiaRAG, "_prepare_vdb_op", lambda self, **kw: fake_vdb)
 
@@ -419,13 +418,10 @@ async def test_generate_skips_query_rewriter_for_image_query(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_generate_combines_history_when_multiturn_enabled(monkeypatch):
-    """Test that when multiturn_retrieval_simple is True, history is concatenated."""
+    """CONVERSATION_HISTORY combines prior user queries during generation retrieval."""
     from nvidia_rag.rag_server.main import NvidiaRAG
     
-    # Enable multiturn retrieval via environment variable BEFORE creating NvidiaRAG instance
-    # Also set CONVERSATION_HISTORY > 0 so chat_history is not empty
-    monkeypatch.setenv("MULTITURN_RETRIEVER_SIMPLE", "True")
-    monkeypatch.setenv("CONVERSATION_HISTORY", "5")
+    monkeypatch.setenv("CONVERSATION_HISTORY", "1")
     
     fake_vdb = DummyVDB()
     rag = NvidiaRAG()
@@ -447,7 +443,5 @@ async def test_generate_combines_history_when_multiturn_enabled(monkeypatch):
         filter_expr="",
     )
 
-    # In _rag_chain when multiturn_retrieval_simple is enabled, 
-    # last previous user query is combined with current retriever_query
-    # Expected concatenation: "What is RAG?. How does it work?"
+    # CONVERSATION_HISTORY=1 combines the latest previous user query with the current query.
     assert fake_vdb.last_query == "What is RAG?. How does it work?"

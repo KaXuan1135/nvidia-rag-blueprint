@@ -450,6 +450,45 @@ def prepare_llm_request(messages: list[dict[str, Any]], **kwargs) -> dict[str, A
     return last_user_message, processed_chat_history
 
 
+def project_conversation_history(
+    chat_history: list[dict[str, Any]], turn_count: int
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Project prior messages into retrieval and generation histories.
+
+    Retrieval uses the latest user queries only. Generation uses the latest
+    complete user/assistant turns so references to prior answers remain
+    understandable. System messages, orphan assistant messages, and incomplete
+    user turns are excluded from generation history.
+    """
+
+    if turn_count <= 0:
+        return [], []
+
+    user_messages = [
+        message for message in chat_history if message.get("role") == "user"
+    ]
+    retrieval_history = user_messages[-turn_count:]
+
+    completed_turns: list[tuple[dict[str, Any], dict[str, Any]]] = []
+    pending_user: dict[str, Any] | None = None
+    for message in chat_history:
+        role = message.get("role")
+        if role == "user":
+            pending_user = message
+        elif (
+            role == "assistant"
+            and pending_user is not None
+            and _is_empty_content(message.get("content"))
+        ):
+            completed_turns.append((pending_user, message))
+            pending_user = None
+
+    generation_history = [
+        message for turn in completed_turns[-turn_count:] for message in turn
+    ]
+    return retrieval_history, generation_history
+
+
 def _extract_stream_delta(chunk: Any) -> tuple[str, str]:
     """Extract answer content and reasoning content from a streamed chunk."""
     if isinstance(chunk, str):

@@ -70,6 +70,7 @@ from nvidia_rag.rag_server.response_generator import (
     prepare_citations,
     prepare_citations_nrl,
     prepare_llm_request,
+    project_conversation_history,
     retrieve_summary,
 )
 from nvidia_rag.rag_server.validation import (
@@ -1171,12 +1172,13 @@ class NvidiaRAG:
             # Handle multi-turn conversations with two different strategies:
             # 1. Query rewriting: Creates a standalone, context-aware query (good for both retrieval and tasks)
             # 2. Query combination: Concatenates history for retrieval, keeps original for specific tasks
+            conversation_history_count = int(
+                os.environ.get("CONVERSATION_HISTORY", 0)
+            )
+            retrieval_history, _ = project_conversation_history(
+                messages, conversation_history_count
+            )
             if messages and not is_image_query:
-                # Check CONVERSATION_HISTORY setting
-                conversation_history_count = int(
-                    os.environ.get("CONVERSATION_HISTORY", 0)
-                )
-
                 if enable_query_rewriting:
                     # Skip query rewriting if conversation history is disabled
                     if conversation_history_count == 0:
@@ -1193,18 +1195,6 @@ class NvidiaRAG:
                             ErrorCodeMapping.SERVICE_UNAVAILABLE,
                         )
                     else:
-                        # conversation is tuple so it should be multiple of two
-                        # -1 is to keep last k conversation
-                        history_count = conversation_history_count * 2 * -1
-                        messages = messages[history_count:]
-                        conversation_history = []
-
-                        for message in messages:
-                            if message.get("role") != "system":
-                                conversation_history.append(
-                                    (message.get("role"), message.get("content"))
-                                )
-
                         # Based on conversation history recreate query for better
                         # document retrieval
                         contextualize_q_system_prompt = (
@@ -1226,11 +1216,11 @@ class NvidiaRAG:
 
                         # Format conversation history as a string
                         formatted_history = ""
-                        if conversation_history:
+                        if retrieval_history:
                             formatted_history = "\n".join(
                                 [
-                                    f"{role.capitalize()}: {content}"
-                                    for role, content in conversation_history
+                                    f"User: {message.get('content')}"
+                                    for message in retrieval_history
                                 ]
                             )
 
@@ -1289,22 +1279,14 @@ class NvidiaRAG:
                 else:
                     # Query combination strategy: Concatenate history for better retrieval context
                     # Note: processed_query remains unchanged (original query) for clean task processing
-                    if self.config.query_rewriter.multiturn_retrieval_simple:
-                        user_queries = [
-                            msg.get("content")
-                            for msg in messages
-                            if msg.get("role") == "user"
-                        ]
-                        retriever_query = ". ".join(
-                            [*user_queries, self._extract_text_from_content(query)]
-                        )
-                        logger.info("Combined retriever query: %s", retriever_query)
-                    else:
-                        # Use only the current query, ignore conversation history
-                        logger.info(
-                            "Using only current query: %s for retrieval (conversation history disabled)",
-                            retriever_query,
-                        )
+                    user_queries = [
+                        self._extract_text_from_content(msg.get("content"))
+                        for msg in retrieval_history
+                    ]
+                    retriever_query = ". ".join(
+                        [*user_queries, self._extract_text_from_content(query)]
+                    )
+                    logger.info("Combined retriever query: %s", retriever_query)
 
             if enable_filter_generator and not is_image_query:
                 if self.config.vector_store.name not in ("milvus", "elasticsearch"):
@@ -1800,15 +1782,10 @@ class NvidiaRAG:
 
         # LLM path (text-only, no VLM)
         try:
-            # Limit conversation history to prevent overwhelming the model
-            # conversation is tuple so it should be multiple of two
-            # -1 is to keep last k conversation
             conversation_history_count = int(os.environ.get("CONVERSATION_HISTORY", 0))
-            if conversation_history_count == 0:
-                chat_history = []
-            else:
-                history_count = conversation_history_count * 2 * -1
-                chat_history = chat_history[history_count:]
+            _, chat_history = project_conversation_history(
+                chat_history, conversation_history_count
+            )
 
             # Use the new prompt processing method
             (
@@ -2022,13 +1999,10 @@ class NvidiaRAG:
             # Initialize vlm_settings if not provided
             vlm_settings = vlm_settings or {}
 
-            # Limit conversation history to prevent overwhelming the model
             conversation_history_count = int(os.environ.get("CONVERSATION_HISTORY", 0))
-            if conversation_history_count == 0:
-                chat_history = []
-            else:
-                history_count = conversation_history_count * 2 * -1
-                chat_history = chat_history[history_count:]
+            _, chat_history = project_conversation_history(
+                chat_history, conversation_history_count
+            )
 
             # Resolve VLM settings from dict or config defaults
             vlm_model_cfg = vlm_settings.get("vlm_model") or self.config.vlm.model_name
@@ -2432,16 +2406,15 @@ class NvidiaRAG:
 
         # --- Query rewriting (mirrors _rag_chain logic) ----------------------
         conversation_history_count = int(os.environ.get("CONVERSATION_HISTORY", 0))
-        if conversation_history_count == 0:
-            chat_history_for_rewrite = []
+        chat_history_for_rewrite, _ = project_conversation_history(
+            chat_history, conversation_history_count
+        )
+        if not chat_history_for_rewrite:
             if enable_query_rewriting:
                 logger.warning(
                     "Query rewriting enabled but CONVERSATION_HISTORY=0; "
                     "skipping query rewriting for agentic pipeline."
                 )
-        else:
-            history_count = conversation_history_count * 2 * -1
-            chat_history_for_rewrite = chat_history[history_count:]
 
         if chat_history_for_rewrite and enable_query_rewriting:
             logger.info("=" * 60)
@@ -2776,21 +2749,17 @@ class NvidiaRAG:
             top_k = vdb_top_k if ranker and enable_reranker else reranker_top_k
             logger.info("Setting retriever top k as: %s.", top_k)
 
-            # conversation is tuple so it should be multiple of two
-            # -1 is to keep last k conversation
             conversation_history_count = int(os.environ.get("CONVERSATION_HISTORY", 0))
+            retrieval_history, chat_history = project_conversation_history(
+                chat_history, conversation_history_count
+            )
             if conversation_history_count == 0:
-                chat_history = []
-                # Warn if query rewriting is enabled but conversation history is disabled
                 if enable_query_rewriting:
                     logger.warning(
                         "Query rewriting is enabled but CONVERSATION_HISTORY is set to 0. "
                         "Query rewriting requires conversation history to work effectively. "
                         "Skipping query rewriting. Set CONVERSATION_HISTORY > 0 to enable query rewriting."
                     )
-            else:
-                history_count = conversation_history_count * 2 * -1
-                chat_history = chat_history[history_count:]
             retrieval_time_ms = None
             context_reranker_time_ms = None
 
@@ -2815,7 +2784,7 @@ class NvidiaRAG:
             # Handle multi-turn conversations with two different strategies:
             # 1. Query rewriting: Creates a standalone, context-aware query (good for both retrieval and tasks)
             # 2. Query combination: Concatenates history for retrieval, keeps original for specific tasks
-            if chat_history and not is_image_query:
+            if retrieval_history and not is_image_query:
                 if enable_query_rewriting:
                     logger.info("=" * 80)
                     logger.info("STAGE: Query Rewriting")
@@ -2832,7 +2801,7 @@ class NvidiaRAG:
                     )
                     logger.info(
                         "  - Chat History Messages: %d",
-                        len(chat_history) if chat_history else 0,
+                        len(retrieval_history),
                     )
                     logger.info("-" * 80)
 
@@ -2873,11 +2842,12 @@ class NvidiaRAG:
 
                         # Format conversation history as a string
                         formatted_history = ""
-                        if conversation_history:
+                        if retrieval_history:
                             formatted_history = "\n".join(
                                 [
-                                    f"{role.capitalize()}: {content}"
-                                    for role, content in conversation_history
+                                    "User: "
+                                    f"{self._extract_text_from_content(message.get('content'))}"
+                                    for message in retrieval_history
                                 ]
                             )
 
@@ -2971,22 +2941,14 @@ class NvidiaRAG:
                 else:
                     # Query combination strategy: Concatenate history for better retrieval context
                     # Note: processed_query remains unchanged (original query) for clean task processing
-                    if self.config.query_rewriter.multiturn_retrieval_simple:
-                        user_query_results = [
-                            self._build_retriever_query_from_content(msg.get("content"))
-                            for msg in chat_history
-                            if msg.get("role") == "user"
-                        ][-1:]
-                        # Extract just the query strings from the tuples
-                        user_queries = [query for query, _ in user_query_results]
-                        retriever_query = ". ".join([*user_queries, retriever_query])
-                        logger.info("Combined retriever query: %s", retriever_query)
-                    else:
-                        # Use only the current query, ignore conversation history
-                        logger.info(
-                            "Using only current query %s for retrieval (conversation history disabled)",
-                            retriever_query,
-                        )
+                    user_query_results = [
+                        self._build_retriever_query_from_content(msg.get("content"))
+                        for msg in retrieval_history
+                    ]
+                    # Extract just the query strings from the tuples
+                    user_queries = [query for query, _ in user_query_results]
+                    retriever_query = ". ".join([*user_queries, retriever_query])
+                    logger.info("Combined retriever query: %s", retriever_query)
 
             if enable_filter_generator and not is_image_query:
                 if self.config.vector_store.name not in ("milvus", "elasticsearch"):
