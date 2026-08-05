@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import random
 import re
 import statistics
 import time
@@ -62,6 +63,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--resume-dir", type=Path)
     parser.add_argument("--query-languages", nargs="+", default=["en"])
     parser.add_argument("--limit", type=int, help="Maximum base questions before language expansion")
+    parser.add_argument("--sample-size", type=int, help="Random base-question sample size")
+    parser.add_argument("--seed", type=int, default=1135)
     parser.add_argument("--question-ids", nargs="*")
     parser.add_argument("--rag-url", default="http://localhost:8081/v1")
     parser.add_argument("--llm-url", default="http://localhost:8999/v1")
@@ -74,7 +77,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--temperature", type=float, default=0.0)
     parser.add_argument("--max-tokens", type=int, default=2048)
     parser.add_argument("--judge", action=argparse.BooleanOptionalAction, default=True)
-    parser.add_argument("--judge-max-tokens", type=int, default=768)
+    parser.add_argument("--judge-max-tokens", type=int, default=2048)
+    parser.add_argument("--judge-context-chars", type=int, default=12000)
     parser.add_argument("--request-timeout", type=float, default=600.0)
     parser.add_argument("--retrieved-page-base", choices=[0, 1], type=int, default=0)
     parser.add_argument("--continue-on-error", action=argparse.BooleanOptionalAction, default=True)
@@ -228,6 +232,13 @@ def load_samples(args: argparse.Namespace) -> list[Sample]:
         missing = wanted - {str(row.get("question_id")) for row in questions}
         if missing:
             raise ValueError(f"Unknown question IDs: {sorted(missing)}")
+    if args.sample_size is not None:
+        if args.sample_size > len(questions):
+            raise ValueError(
+                f"--sample-size {args.sample_size} exceeds {len(questions)} questions"
+            )
+        questions = random.Random(args.seed).sample(questions, args.sample_size)
+        questions.sort(key=lambda row: str(row.get("question_id")))
     if args.limit is not None:
         questions = questions[: args.limit]
     if args.dataset == "enterprise_v2":
@@ -498,7 +509,7 @@ def judge_answer(
     answer: str,
     contexts: list[str],
 ) -> dict[str, Any]:
-    context = "\n\n".join(contexts)[:90000]
+    context = "\n\n".join(contexts)[: args.judge_context_chars]
     prompt = f"""Evaluate a multilingual retrieval-augmented answer using the reference and retrieved context.
 
 Question language: {sample.query_language}
@@ -514,6 +525,7 @@ Candidate answer:
 {answer}
 
 Judge meaning, facts, numbers, conditions and exceptions rather than wording. A correct translation or paraphrase must receive the same correctness grade as the reference. Do not reward claims unsupported by the context. The candidate should answer in the question language; common product names and technical terms are allowed in English.
+Reason briefly and reserve enough output tokens for the final JSON object.
 
 Use integer grades only: 0=wrong/absent, 1=mostly wrong, 2=mixed, 3=mostly correct, 4=fully correct. Return one JSON object and nothing else:
 {{
@@ -642,9 +654,7 @@ def select_contexts(results: list[dict[str, Any]]) -> list[str]:
     contexts = []
     for item in results:
         metadata = item.get("metadata") or {}
-        contexts.append(
-            str(item.get("content") or metadata.get("description") or "")
-        )
+        contexts.append(str(metadata.get("description") or item.get("content") or ""))
     return contexts
 
 
@@ -726,14 +736,18 @@ def run(args: argparse.Namespace, samples: list[Sample]) -> Path:
                 )
                 if args.judge:
                     assert model is not None
-                    generation["judge"] = judge_answer(
-                        session,
-                        args,
-                        model,
-                        sample,
-                        generation["answer"],
-                        select_contexts((search or {}).get("results", [])),
-                    )
+                    try:
+                        generation["judge"] = judge_answer(
+                            session,
+                            args,
+                            model,
+                            sample,
+                            generation["answer"],
+                            select_contexts((search or {}).get("results", [])),
+                        )
+                    except Exception as exc:
+                        generation["judge_error"] = f"{type(exc).__name__}: {exc}"
+                        print(f"  JUDGE ERROR: {generation['judge_error']}", flush=True)
                 row["end_to_end"] = generation
         except Exception as exc:
             row["error"] = f"{type(exc).__name__}: {exc}"
@@ -767,6 +781,12 @@ def run(args: argparse.Namespace, samples: list[Sample]) -> Path:
 def validate_args(args: argparse.Namespace) -> None:
     if args.limit is not None and args.limit < 1:
         raise ValueError("--limit must be positive")
+    if args.sample_size is not None and args.sample_size < 1:
+        raise ValueError("--sample-size must be positive")
+    if args.sample_size is not None and args.limit is not None:
+        raise ValueError("--sample-size and --limit cannot be used together")
+    if args.judge_context_chars < 1 or args.judge_max_tokens < 1:
+        raise ValueError("judge context and output budgets must be positive")
     if args.vdb_top_k < 1 or args.reranker_top_k < 1:
         raise ValueError("top-k values must be positive")
     if args.reranker_top_k > args.vdb_top_k:

@@ -39,13 +39,15 @@ python3 scripts/benchmark_corpus_qa.py \
   --limit 1
 ```
 
-## Full runs
+## Sampled and full runs
 
 ```bash
 python3 scripts/benchmark_corpus_qa.py \
   --dataset enterprise_v2 \
   --collection enterprise-corpus-v2 \
   --query-languages en zh ms \
+  --sample-size 100 \
+  --seed 1135 \
   --reranker on \
   --query-rewriting off
 
@@ -61,6 +63,9 @@ Use `--modes retrieval` for a fast retrieval-only run. Use
 `--resume-dir <result-directory>` to continue an interrupted run without
 repeating successful samples. `--question-ids Q-00001 Q-00042` selects exact
 questions and `--limit N` limits base questions before language expansion.
+`--sample-size N --seed S` draws a reproducible random sample before language
+expansion; therefore 100 Enterprise base questions with `en zh ms` produce 300
+query instances.
 
 ## Metrics
 
