@@ -70,10 +70,10 @@ query instances.
 ## Metrics
 
 Retrieval metrics include gold-document recall, authoritative-document recall,
-MRR and, where available, PDF-page recall. The default assumes NV-Ingest page
-metadata is zero-based and converts it to one-based PDF page numbers; override
-this with `--retrieved-page-base 1` if the deployment already returns one-based
-pages.
+MRR and, where available, PDF-page recall. This DGX Spark deployment returns
+one-based PDF page metadata, which is the default. Use
+`--retrieved-page-base 0` only for a deployment whose retriever returns
+zero-based page numbers.
 
 Generation metrics include Unicode-aware sequence F1, Chinese character-bigram
 F1, annotated answer-value matching, TTFT, total latency, truncation and visible

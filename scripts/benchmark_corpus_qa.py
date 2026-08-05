@@ -80,7 +80,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--judge-max-tokens", type=int, default=2048)
     parser.add_argument("--judge-context-chars", type=int, default=12000)
     parser.add_argument("--request-timeout", type=float, default=600.0)
-    parser.add_argument("--retrieved-page-base", choices=[0, 1], type=int, default=0)
+    parser.add_argument("--retrieved-page-base", choices=[0, 1], type=int, default=1)
     parser.add_argument("--continue-on-error", action=argparse.BooleanOptionalAction, default=True)
     return parser.parse_args()
 
@@ -562,19 +562,24 @@ Use integer grades only: 0=wrong/absent, 1=mostly wrong, 2=mixed, 3=mostly corre
         "judge_seconds": result["total_seconds"],
         "judge_reasoning_tokens_visible": bool(result["reasoning"]),
     }
-    dimensions = (
-        "correctness",
-        "faithfulness",
-        "completeness",
-        "answer_relevance",
-        "language_adherence",
-    )
+    dimensions = ("correctness", "faithfulness", "completeness", "answer_relevance")
     for dimension in dimensions:
         grade = int(parsed[f"{dimension}_grade"])
         if not 0 <= grade <= 4:
             raise ValueError(f"Judge returned invalid {dimension} grade: {grade}")
         scored[f"{dimension}_grade"] = grade
         scored[dimension] = grade / 4
+    language_grade = parsed.get("language_adherence_grade")
+    if language_grade is None:
+        scored["schema_warnings"] = ["missing language_adherence_grade"]
+    else:
+        language_grade = int(language_grade)
+        if not 0 <= language_grade <= 4:
+            raise ValueError(
+                f"Judge returned invalid language_adherence grade: {language_grade}"
+            )
+        scored["language_adherence_grade"] = language_grade
+        scored["language_adherence"] = language_grade / 4
     return scored
 
 
@@ -601,9 +606,37 @@ def bool_rate(rows: list[dict[str, Any]], path: tuple[str, ...]) -> float | None
 
 
 def summarize_group(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    judge_attempted = [
+        row
+        for row in rows
+        if isinstance(row.get("end_to_end"), dict)
+        and ("judge" in row["end_to_end"] or "judge_error" in row["end_to_end"])
+    ]
+    judge_succeeded = [
+        row for row in judge_attempted if isinstance(row["end_to_end"].get("judge"), dict)
+    ]
+    language_scored = [
+        row
+        for row in judge_succeeded
+        if "language_adherence" in row["end_to_end"]["judge"]
+    ]
     return {
         "samples": len(rows),
         "successful_samples": sum("error" not in row for row in rows),
+        "judge_attempted_samples": len(judge_attempted),
+        "judge_successful_samples": len(judge_succeeded),
+        "judge_error_samples": len(judge_attempted) - len(judge_succeeded),
+        "judge_coverage": len(judge_succeeded) / len(judge_attempted)
+        if judge_attempted
+        else None,
+        "judge_language_scored_samples": len(language_scored),
+        "judge_language_coverage": len(language_scored) / len(judge_succeeded)
+        if judge_succeeded
+        else None,
+        "judge_schema_warning_samples": sum(
+            bool(row["end_to_end"]["judge"].get("schema_warnings"))
+            for row in judge_succeeded
+        ),
         "document_recall": mean(rows, ("retrieval", "scores", "document_recall")),
         "authoritative_document_recall": mean(
             rows, ("retrieval", "scores", "authoritative_document_recall")
@@ -668,9 +701,14 @@ def run(args: argparse.Namespace, samples: list[Sample]) -> Path:
     run_dir.mkdir(parents=True, exist_ok=True)
     responses_path = run_dir / "responses.jsonl"
     rows = load_jsonl(responses_path) if responses_path.exists() else []
-    completed = {row["id"] for row in rows if "error" not in row}
     session = requests.Session()
     judge_active = args.judge and "end_to_end" in args.modes
+    completed = {
+        row["id"]
+        for row in rows
+        if "error" not in row
+        and (not judge_active or "judge_error" not in row.get("end_to_end", {}))
+    }
     model = (
         model_name(session, args.llm_url, args.request_timeout) if judge_active else None
     )
@@ -767,7 +805,11 @@ def run(args: argparse.Namespace, samples: list[Sample]) -> Path:
         json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
     write_summary_csv(run_dir / "summary.csv", summary)
-    failures = [row for row in rows if "error" in row]
+    failures = [
+        row
+        for row in rows
+        if "error" in row or "judge_error" in row.get("end_to_end", {})
+    ]
     failures_path = run_dir / "failures.jsonl"
     failures_path.write_text(
         "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in failures),
