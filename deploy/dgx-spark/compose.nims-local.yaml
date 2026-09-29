@@ -26,6 +26,9 @@ services:
     volumes:
       - rag-vol-nim-cache:/opt/nim/.cache
     environment:
+      NIM_PASSTHROUGH_ARGS: >-
+        --gpu-memory-utilization
+        ${NEMOTRON_NANO_GPU_MEMORY_UTILIZATION:-0.28}
       NGC_API_KEY: ${NGC_API_KEY:?NGC_API_KEY is required}
       NIM_MODEL_PROFILE: ${NEMOTRON_NANO_PROFILE:-}
       NIM_MAX_MODEL_LEN: ${NEMOTRON_NANO_CONTEXT_LENGTH:-32768}
